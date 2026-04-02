@@ -10,8 +10,9 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
-        $upcomingConcerts = Concert::orderBy('date', 'asc')
-            ->limit(4)
+        $upcomingConcerts = Concert::where('date', '>=', now()->toDateString())
+            ->orderBy('date', 'asc')
+            ->limit(6)
             ->get(['id', 'title', 'date', 'location', 'photo_path', 'is_current']);
 
         return Inertia::render('Home', [
