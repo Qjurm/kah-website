@@ -24,7 +24,7 @@ class ConcertController extends Controller
 
     public function create(): Response
     {
-        $scores = Score::orderBy('number')->get(['id', 'title', 'composer']);
+        $scores = Score::orderBy('number')->get(['id', 'title', 'composer', 'number']);
 
         return Inertia::render('Admin/Concerts/Create', [
             'scores' => $scores,
@@ -34,12 +34,13 @@ class ConcertController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'date' => 'required|date',
-            'location' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:5120',
+            'title'      => 'required|string|max:255',
+            'date'       => 'required|date',
+            'location'   => 'nullable|string|max:255',
+            'photo'      => 'nullable|image|max:5120',
             'is_current' => 'boolean',
-            'score_ids' => 'nullable|array',
+            'is_public'  => 'boolean',
+            'score_ids'  => 'nullable|array',
             'score_ids.*' => 'exists:scores,id',
         ]);
 
@@ -53,16 +54,15 @@ class ConcertController extends Controller
         }
 
         $concert = Concert::create([
-            'title' => $validated['title'],
-            'date' => $validated['date'],
-            'location' => $validated['location'] ?? null,
+            'title'      => $validated['title'],
+            'date'       => $validated['date'],
+            'location'   => $validated['location'] ?? null,
             'photo_path' => $photoPath,
             'is_current' => $validated['is_current'] ?? false,
+            'is_public'  => $validated['is_public'] ?? false,
         ]);
 
-        if (!empty($validated['score_ids'])) {
-            $concert->scores()->sync($validated['score_ids']);
-        }
+        $concert->scores()->sync($validated['score_ids'] ?? []);
 
         return redirect()->route('admin.concerts.index')->with('success', 'Concert aangemaakt.');
     }
@@ -70,23 +70,24 @@ class ConcertController extends Controller
     public function edit(Concert $concert): Response
     {
         $concert->load('scores');
-        $scores = Score::orderBy('number')->get(['id', 'title', 'composer']);
+        $scores = Score::orderBy('number')->get(['id', 'title', 'composer', 'number']);
 
         return Inertia::render('Admin/Concerts/Edit', [
             'concert' => $concert,
-            'scores' => $scores,
+            'scores'  => $scores,
         ]);
     }
 
     public function update(Request $request, Concert $concert): RedirectResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'date' => 'required|date',
-            'location' => 'nullable|string|max:255',
-            'photo' => 'nullable|image|max:5120',
-            'is_current' => 'boolean',
-            'score_ids' => 'nullable|array',
+            'title'       => 'required|string|max:255',
+            'date'        => 'required|date',
+            'location'    => 'nullable|string|max:255',
+            'photo'       => 'nullable|image|max:5120',
+            'is_current'  => 'boolean',
+            'is_public'   => 'boolean',
+            'score_ids'   => 'nullable|array',
             'score_ids.*' => 'exists:scores,id',
         ]);
 
@@ -103,11 +104,12 @@ class ConcertController extends Controller
         }
 
         $concert->update([
-            'title' => $validated['title'],
-            'date' => $validated['date'],
-            'location' => $validated['location'] ?? null,
+            'title'      => $validated['title'],
+            'date'       => $validated['date'],
+            'location'   => $validated['location'] ?? null,
             'photo_path' => $photoPath,
             'is_current' => $validated['is_current'] ?? false,
+            'is_public'  => $validated['is_public'] ?? false,
         ]);
 
         $concert->scores()->sync($validated['score_ids'] ?? []);
