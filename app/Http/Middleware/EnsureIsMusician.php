@@ -4,14 +4,24 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureIsMusician
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isMusician()) {
+        $user = $request->user();
+
+        if (!$user || !$user->isMusician()) {
             return redirect('/login');
+        }
+
+        if (!$user->isApproved()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect('/login')->withErrors(['email' => 'Je account wacht op goedkeuring van een beheerder.']);
         }
 
         return $next($request);
