@@ -262,12 +262,11 @@ function formatDate(d) {
                     <p class="text-gray-500">Blijf op de hoogte van concerten, nieuws en activiteiten.</p>
                 </div>
                 <div class="flex justify-center">
-                    <div class="rounded-2xl overflow-hidden shadow-sm border border-gray-100 w-full max-w-2xl">
+                    <!-- Responsive Facebook iframe wrapper -->
+                    <div class="w-full max-w-3xl rounded-2xl overflow-hidden shadow-sm border border-gray-100" style="aspect-ratio: 1.2;">
                         <iframe
-                            src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FKAHarmonie&tabs=timeline&width=700&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true"
-                            width="700"
-                            height="600"
-                            style="border:none;overflow:hidden;max-width:100%;width:100%"
+                            src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2FKAHarmonie&tabs=timeline&width=800&height=600&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true"
+                            style="border:none;overflow:hidden;width:100%;height:100%"
                             scrolling="no"
                             frameborder="0"
                             allowfullscreen="true"
