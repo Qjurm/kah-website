@@ -1,5 +1,13 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+
+const props = defineProps({
+    upcomingConcerts: Array,
+});
+
+function formatDate(d) {
+    return new Date(d).toLocaleDateString('nl-NL', { year: 'numeric', month: 'long', day: 'numeric' });
+}
 </script>
 
 <template>
@@ -15,10 +23,7 @@ import { Head, Link } from '@inertiajs/vue3';
                         <span class="hidden sm:block text-sm text-slate-300">Koninklijke Almelosche Harmonie</span>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <Link :href="route('muziek.index')" class="text-slate-300 hover:text-yellow-500 transition-colors text-sm font-medium">
-                            Muziek
-                        </Link>
-                        <Link :href="route('login')" class="bg-yellow-500 text-slate-900 px-4 py-2 rounded-md text-sm font-semibold hover:bg-yellow-400 transition-colors">
+                        <Link :href="route('login')" class="text-slate-300 hover:text-yellow-500 transition-colors text-sm font-medium">
                             Inloggen
                         </Link>
                     </div>
@@ -48,11 +53,11 @@ import { Head, Link } from '@inertiajs/vue3';
                     Samen staan wij voor een rijke muzikale traditie die generaties verbindt.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link :href="route('muziek.index')" class="bg-yellow-500 text-slate-900 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-400 transition-colors">
-                        Muziekaanbod bekijken
-                    </Link>
-                    <a href="#contact" class="border-2 border-yellow-500 text-yellow-500 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-500 hover:text-slate-900 transition-colors">
+                    <a href="#contact" class="bg-yellow-500 text-slate-900 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-400 transition-colors">
                         Contact opnemen
+                    </a>
+                    <a href="#concerten" class="border-2 border-yellow-500 text-yellow-500 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-500 hover:text-slate-900 transition-colors">
+                        Aankomende concerten
                     </a>
                 </div>
             </div>
@@ -86,12 +91,44 @@ import { Head, Link } from '@inertiajs/vue3';
                                 <div class="text-sm text-gray-500 mt-1">Muzikanten</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-4xl font-bold text-yellow-500">10+</div>
+                                <div class="text-4xl font-bold text-yellow-500">4</div>
                                 <div class="text-sm text-gray-500 mt-1">Concerten/jaar</div>
                             </div>
                         </div>
                     </div>
                     <div class="bg-blue-50 rounded-2xl p-8 border border-blue-100">
+                        <!-- Upcoming Concerts -->
+                        <div v-if="upcomingConcerts && upcomingConcerts.length" id="concerten" class="mb-8">
+                            <h3 class="text-xl font-bold text-blue-900 mb-4">Aankomende concerten</h3>
+                            <div class="space-y-4">
+                                <div
+                                    v-for="concert in upcomingConcerts"
+                                    :key="concert.id"
+                                    class="bg-white rounded-xl border border-blue-100 overflow-hidden flex gap-4 items-start p-4"
+                                >
+                                    <img
+                                        v-if="concert.photo_path"
+                                        :src="`/storage/${concert.photo_path}`"
+                                        :alt="concert.title"
+                                        class="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                    />
+                                    <div v-else class="w-20 h-20 bg-blue-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span v-if="concert.is_current" class="inline-block bg-yellow-500 text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full">Huidig</span>
+                                            <span class="text-xs text-blue-600 font-medium">{{ formatDate(concert.date) }}</span>
+                                        </div>
+                                        <p class="font-semibold text-blue-900 text-sm leading-tight">{{ concert.title }}</p>
+                                        <p v-if="concert.location" class="text-xs text-gray-500 mt-0.5">{{ concert.location }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <h3 class="text-xl font-bold text-blue-900 mb-4">Volg ons op Facebook</h3>
                         <p class="text-gray-600 text-sm mb-6">Blijf op de hoogte van onze concerten, nieuws en activiteiten.</p>
                         <div class="flex justify-center">
@@ -132,7 +169,7 @@ import { Head, Link } from '@inertiajs/vue3';
                         <h3 class="text-yellow-500 font-bold text-lg mb-4">Links</h3>
                         <ul class="text-slate-300 text-sm space-y-2">
                             <li>
-                                <Link :href="route('muziek.index')" class="hover:text-yellow-500 transition-colors">Muziekaanbod</Link>
+                                <Link :href="route('muziek.index')" class="hover:text-yellow-500 transition-colors">Voor Muzikanten</Link>
                             </li>
                             <li>
                                 <Link :href="route('login')" class="hover:text-yellow-500 transition-colors">Inloggen</Link>

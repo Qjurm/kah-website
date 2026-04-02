@@ -8,15 +8,21 @@ const props = defineProps({
 });
 
 const form = useForm({
+    _method: 'PUT',
     title: props.concert.title,
     date: props.concert.date,
     location: props.concert.location || '',
+    photo: null,
     is_current: props.concert.is_current,
     score_ids: props.concert.scores?.map(s => s.id) || [],
 });
 
 function submit() {
-    form.put(route('admin.concerts.update', props.concert.id));
+    form.post(route('admin.concerts.update', props.concert.id));
+}
+
+function handlePhoto(e) {
+    form.photo = e.target.files[0] ?? null;
 }
 
 function toggleScore(id) {
@@ -73,6 +79,21 @@ function toggleScore(id) {
                                 type="text"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Foto (optioneel)</label>
+                            <div v-if="concert.photo_path" class="mb-2">
+                                <img :src="`/storage/${concert.photo_path}`" alt="Huidig foto" class="h-24 w-auto rounded-lg object-cover" />
+                                <p class="text-xs text-gray-400 mt-1">Huidig foto — upload een nieuw om te vervangen</p>
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                @change="handlePhoto"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p v-if="form.errors.photo" class="text-red-500 text-sm mt-1">{{ form.errors.photo }}</p>
                         </div>
 
                         <div class="flex items-center gap-3">

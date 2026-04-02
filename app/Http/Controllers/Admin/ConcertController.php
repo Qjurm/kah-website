@@ -7,6 +7,7 @@ use App\Models\Concert;
 use App\Models\Score;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,6 +37,7 @@ class ConcertController extends Controller
             'title' => 'required|string|max:255',
             'date' => 'required|date',
             'location' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:5120',
             'is_current' => 'boolean',
             'score_ids' => 'nullable|array',
             'score_ids.*' => 'exists:scores,id',
@@ -45,10 +47,16 @@ class ConcertController extends Controller
             Concert::where('is_current', true)->update(['is_current' => false]);
         }
 
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('concert-photos', 'public');
+        }
+
         $concert = Concert::create([
             'title' => $validated['title'],
             'date' => $validated['date'],
             'location' => $validated['location'] ?? null,
+            'photo_path' => $photoPath,
             'is_current' => $validated['is_current'] ?? false,
         ]);
 
@@ -76,6 +84,7 @@ class ConcertController extends Controller
             'title' => 'required|string|max:255',
             'date' => 'required|date',
             'location' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|max:5120',
             'is_current' => 'boolean',
             'score_ids' => 'nullable|array',
             'score_ids.*' => 'exists:scores,id',
@@ -85,10 +94,19 @@ class ConcertController extends Controller
             Concert::where('is_current', true)->update(['is_current' => false]);
         }
 
+        $photoPath = $concert->photo_path;
+        if ($request->hasFile('photo')) {
+            if ($concert->photo_path) {
+                Storage::disk('public')->delete($concert->photo_path);
+            }
+            $photoPath = $request->file('photo')->store('concert-photos', 'public');
+        }
+
         $concert->update([
             'title' => $validated['title'],
             'date' => $validated['date'],
             'location' => $validated['location'] ?? null,
+            'photo_path' => $photoPath,
             'is_current' => $validated['is_current'] ?? false,
         ]);
 
@@ -99,6 +117,10 @@ class ConcertController extends Controller
 
     public function destroy(Concert $concert): RedirectResponse
     {
+        if ($concert->photo_path) {
+            Storage::disk('public')->delete($concert->photo_path);
+        }
+
         $concert->delete();
 
         return redirect()->route('admin.concerts.index')->with('success', 'Concert verwijderd.');

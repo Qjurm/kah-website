@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Concert extends Model
 {
-    protected $fillable = ['title', 'date', 'location', 'is_current'];
+    protected $fillable = ['title', 'date', 'location', 'photo_path', 'is_current'];
 
     protected $casts = [
         'date' => 'date',

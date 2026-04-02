@@ -1,13 +1,23 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
+
+const homeRoute = computed(() => {
+    const role = page.props.auth?.user?.role;
+    if (role === 'admin') return route('admin.dashboard');
+    if (role === 'musician') return route('muziek.index');
+    return route('home');
+});
+
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 </script>
 
 <template>
@@ -22,7 +32,7 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
+                                <Link :href="homeRoute">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-gray-800"
                                     />
@@ -34,10 +44,32 @@ const showingNavigationDropdown = ref(false);
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
                                 <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
+                                    v-if="isAdmin"
+                                    :href="route('admin.dashboard')"
+                                    :active="route().current('admin.dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    v-if="isAdmin"
+                                    :href="route('admin.concerts.index')"
+                                    :active="route().current('admin.concerts.*')"
+                                >
+                                    Concerten
+                                </NavLink>
+                                <NavLink
+                                    v-if="isAdmin"
+                                    :href="route('admin.scores.index')"
+                                    :active="route().current('admin.scores.*')"
+                                >
+                                    Stukken
+                                </NavLink>
+                                <NavLink
+                                    v-if="!isAdmin"
+                                    :href="route('muziek.index')"
+                                    :active="route().current('muziek.index')"
+                                >
+                                    Muziek
                                 </NavLink>
                             </div>
                         </div>
@@ -141,10 +173,32 @@ const showingNavigationDropdown = ref(false);
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
+                            v-if="isAdmin"
+                            :href="route('admin.dashboard')"
+                            :active="route().current('admin.dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAdmin"
+                            :href="route('admin.concerts.index')"
+                            :active="route().current('admin.concerts.*')"
+                        >
+                            Concerten
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAdmin"
+                            :href="route('admin.scores.index')"
+                            :active="route().current('admin.scores.*')"
+                        >
+                            Stukken
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="!isAdmin"
+                            :href="route('muziek.index')"
+                            :active="route().current('muziek.index')"
+                        >
+                            Muziek
                         </ResponsiveNavLink>
                     </div>
 

@@ -10,12 +10,17 @@ const form = useForm({
     title: '',
     date: '',
     location: '',
+    photo: null,
     is_current: false,
     score_ids: [],
 });
 
 function submit() {
     form.post(route('admin.concerts.store'));
+}
+
+function handlePhoto(e) {
+    form.photo = e.target.files[0] ?? null;
 }
 
 function toggleScore(id) {
@@ -69,6 +74,17 @@ function toggleScore(id) {
                                 type="text"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Foto (optioneel)</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                @change="handlePhoto"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p v-if="form.errors.photo" class="text-red-500 text-sm mt-1">{{ form.errors.photo }}</p>
                         </div>
 
                         <div class="flex items-center gap-3">
