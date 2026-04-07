@@ -30,7 +30,11 @@ class ScoreController extends Controller
         $instruments = Instrument::orderBy('display_order')->get();
 
         return Inertia::render('Admin/Scores/Create', [
-            'instruments' => InstrumentResource::collection($instruments),
+            'instruments' => $instruments->map(fn ($i) => [
+                'id'            => $i->id,
+                'name'          => $i->name,
+                'display_order' => $i->display_order,
+            ])->toArray(),
         ]);
     }
 

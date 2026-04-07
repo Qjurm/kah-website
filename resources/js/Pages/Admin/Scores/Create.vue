@@ -18,7 +18,7 @@ const form = useForm({
 });
 
 const instrumentOptions = computed(() =>
-    (props.instruments ?? []).map((name) => ({ value: name, label: name }))
+    (props.instruments ?? []).map((inst) => ({ value: inst.id, label: inst.name }))
 );
 const selectedInstrument = ref(null);
 

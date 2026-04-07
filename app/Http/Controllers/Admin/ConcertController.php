@@ -29,7 +29,12 @@ class ConcertController extends Controller
         $scores = Score::orderBy('number')->get();
 
         return Inertia::render('Admin/Concerts/Create', [
-            'scores' => ScoreResource::collection($scores),
+            'scores' => $scores->map(fn ($s) => [
+                'id'       => $s->id,
+                'number'   => $s->number,
+                'title'    => $s->title,
+                'composer' => $s->composer,
+            ])->toArray(),
         ]);
     }
 
