@@ -15,9 +15,11 @@ class UserController extends Controller
 {
     public function index(): Response
     {
-        $users = User::orderBy('name')->paginate(20);
+        $pendingUsers = User::where('approved', false)->orderBy('created_at', 'desc')->get();
+        $users = User::where('approved', true)->orderBy('name')->paginate(20);
 
         return Inertia::render('Admin/Users/Index', [
+            'pendingUsers' => UserResource::collection($pendingUsers),
             'users' => UserResource::collection($users),
         ]);
     }
