@@ -96,7 +96,8 @@ const headerClass = computed(() => {
                                     :href="route('beheer.dashboard')"
                                     :active="route().current('beheer.dashboard')"
                                     :class="{
-                                        'text-white hover:text-gray-100 border-yellow-400': currentMode === 'admin'
+                                        'text-white hover:text-gray-100': currentMode === 'admin',
+                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.dashboard')
                                     }"
                                 >
                                     Dashboard
@@ -106,7 +107,8 @@ const headerClass = computed(() => {
                                     :href="route('beheer.concerten.index')"
                                     :active="route().current('beheer.concerten.*')"
                                     :class="{
-                                        'text-white hover:text-gray-100 border-yellow-400': currentMode === 'admin'
+                                        'text-white hover:text-gray-100': currentMode === 'admin',
+                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.concerten.*')
                                     }"
                                 >
                                     Concerten
@@ -116,7 +118,8 @@ const headerClass = computed(() => {
                                     :href="route('beheer.bladmuziek.index')"
                                     :active="route().current('beheer.bladmuziek.*')"
                                     :class="{
-                                        'text-white hover:text-gray-100 border-yellow-400': currentMode === 'admin'
+                                        'text-white hover:text-gray-100': currentMode === 'admin',
+                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.bladmuziek.*')
                                     }"
                                 >
                                     Stukken
