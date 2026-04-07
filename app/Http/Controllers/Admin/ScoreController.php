@@ -92,6 +92,7 @@ class ScoreController extends Controller
                     'pdf_path'   => $p->pdf_path,
                     'created_at' => $p->created_at,
                 ])->toArray(),
+            ],
             'instruments' => $instruments->map(fn ($i) => [
                 'id'            => $i->id,
                 'name'          => $i->name,
