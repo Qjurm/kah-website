@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ScoreController;
 use App\Http\Controllers\Admin\ScorePartController;
 use App\Http\Controllers\Admin\ConcertController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\InstrumentController;
 use Illuminate\Support\Facades\Route;
 
 // Public
@@ -36,6 +37,9 @@ Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(f
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class);
     Route::resource('gebruikers', UserController::class)->only(['index', 'create', 'store']);
+    
+    // API endpoint for inline instrument creation
+    Route::post('/api/instruments', [InstrumentController::class, 'store'])->name('api.instruments.store');
 });
 
 // Redirect route for dual-role users returning from musician mode to admin

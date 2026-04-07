@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SearchableSelect from '@/Components/Form/SearchableSelect.vue';
+import SearchableSelectWithCreate from '@/Components/Form/SearchableSelectWithCreate.vue';
 import FileUpload from '@/Components/Form/FileUpload.vue';
 
 const props = defineProps({
@@ -22,12 +22,36 @@ const instrumentOptions = computed(() =>
 );
 const selectedInstrument = ref(null);
 
+async function createNewInstrument(name) {
+    try {
+        const response = await fetch(route('beheer.api.instruments.store'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({ name }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return { value: data.name, label: data.name };
+        } else {
+            const error = await response.json();
+            alert('Fout bij aanmaken instrument: ' + (error.message || JSON.stringify(error)));
+            return null;
+        }
+    } catch (error) {
+        console.error('Error creating instrument:', error);
+        alert('Fout bij aanmaken instrument: ' + error.message);
+        return null;
+    }
+}
+
 function addInstrument() {
     if (!selectedInstrument.value) return;
-    const already = form.parts.some((p) => p.instrument === selectedInstrument.value);
-    if (!already) {
-        form.parts.push({ instrument: selectedInstrument.value, pdf: null });
-    }
+    // Allow duplicates! Users can add "Trompet 1" and "Trompet 2"
+    form.parts.push({ instrument: selectedInstrument.value, pdf: null });
     selectedInstrument.value = null;
 }
 
@@ -106,11 +130,13 @@ function submit() {
                         <!-- Add instrument -->
                         <div class="flex gap-2 mb-6">
                             <div class="flex-1">
-                                <SearchableSelect
+                                <SearchableSelectWithCreate
                                     v-model="selectedInstrument"
                                     :options="instrumentOptions"
                                     placeholder="Kies een instrument..."
                                     :clearable="true"
+                                    creatable
+                                    :onCreateNew="createNewInstrument"
                                 />
                             </div>
                             <button
