@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import SearchableSelect from '@/Components/Form/SearchableSelect.vue';
@@ -12,48 +12,36 @@ const props = defineProps({
 
 const step = ref(1);
 
-// Extract concert data safely
-const concert = computed(() => {
-    if (!props.concert) return null;
-    // Unpack the proxy to get actual object
-    return {
-        id: props.concert.id,
-        title: props.concert.title || '',
-        date: props.concert.date || '',
-        location: props.concert.location || '',
-        is_current: props.concert.is_current || false,
-        is_public: props.concert.is_public ?? false,
-        scores: props.concert.scores || [],
-        photo_path: props.concert.photo_path,
-    };
-});
-
+// Initialize form EMPTY
 const form = useForm({
     _method: 'PUT',
     title: '',
     date: '',
     location: '',
-    photo: null,
     is_current: false,
     is_public: false,
+    photo: null,
     score_ids: [],
 });
 
-// Update form when concert data loads
-const updateFormFromConcert = () => {
-    if (concert.value) {
-        form.title = concert.value.title;
-        form.date = concert.value.date;
-        form.location = concert.value.location;
-        form.is_current = concert.value.is_current;
-        form.is_public = concert.value.is_public;
-        form.score_ids = concert.value.scores.map((s) => s.id);
-    }
-};
+// Watch props.concert, populate form when data arrives
+watch(
+    () => props.concert,
+    (newConcert) => {
+        if (!newConcert) return;
 
-// Watch for concert changes
-import { watch } from 'vue';
-watch(concert, updateFormFromConcert, { immediate: true, deep: true });
+        // Set each form field individually
+        Object.assign(form, {
+            title: newConcert.title || '',
+            date: newConcert.date || '',
+            location: newConcert.location || '',
+            is_current: newConcert.is_current || false,
+            is_public: newConcert.is_public || false,
+            score_ids: (newConcert.scores || []).map(s => s.id),
+        });
+    },
+    { immediate: true, deep: true }
+);
 
 // Score selection via SearchableSelect
 const scoreOptions = computed(() =>
@@ -80,13 +68,12 @@ function removeScore(id) {
 }
 
 const photoUrl = computed(() => 
-    concert.value?.photo_path
-        ? `/storage/${concert.value.photo_path}`
+    props.concert?.photo_path
+        ? `/storage/${props.concert.photo_path}`
         : null
 );
 
 function submit() {
-    // Use direct URL since route() might have stale Ziggy cache
     const url = `/beheer/concerten/${props.concert.id}`;
     form.put(url, { forceFormData: true });
 }
@@ -95,7 +82,7 @@ const stepLabels = ['Concertgegevens', 'Stukken koppelen'];
 </script>
 
 <template>
-    <Head :title="`Bewerk: ${concert.title}`" />
+    <Head :title="`Bewerk: ${form.title || 'Concert'}`" />
 
     <AuthenticatedLayout>
         <template #header>

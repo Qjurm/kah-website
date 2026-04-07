@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import SearchableSelectWithCreate from '@/Components/Form/SearchableSelectWithCreate.vue';
@@ -10,12 +10,13 @@ const props = defineProps({
     instruments: Array,
 });
 
-// Existing parts (kept from DB) - initialize empty
+// Existing parts (kept from DB)
 const keptParts = ref([]);
 const removedPartIds = ref([]);
 // New parts to add
 const newParts = ref([]);
 
+// Initialize form EMPTY
 const form = useForm({
     title: '',
     composer: '',
@@ -23,22 +24,30 @@ const form = useForm({
     number: '',
     removed_part_ids: [],
     new_parts: [],
-    _method: '',
+    _method: 'PUT',
 });
 
-// Update form when score data loads
-const updateFormFromScore = () => {
-    if (props.score) {
-        form.title = props.score.title;
-        form.composer = props.score.composer;
-        form.arranger = props.score.arranger || '';
-        form.number = props.score.number;
-        keptParts.value = [...(props.score.parts ?? [])];
-    }
-};
+// Watch props.score, populate form when data arrives
+watch(
+    () => props.score,
+    (newScore) => {
+        if (!newScore) return;
 
-import { watch } from 'vue';
-watch(() => props.score, updateFormFromScore, { immediate: true, deep: true });
+        // Set each form field individually
+        Object.assign(form, {
+            title: newScore.title || '',
+            composer: newScore.composer || '',
+            arranger: newScore.arranger || '',
+            number: newScore.number || '',
+        });
+
+        // Reset part tracking
+        keptParts.value = [...(newScore.parts || [])];
+        removedPartIds.value = [];
+        newParts.value = [];
+    },
+    { immediate: true, deep: true }
+);
 
 const instrumentOptions = computed(() =>
     (props.instruments ?? []).map((name) => ({ value: name, label: name }))
@@ -90,7 +99,6 @@ function removeNewPart(idx) {
 function submit() {
     form.removed_part_ids = removedPartIds.value;
     form.new_parts = newParts.value;
-    form._method = 'PUT';
     form.post(route('beheer.bladmuziek.update', props.score.id), {
         forceFormData: true,
     });
@@ -98,7 +106,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="`Bewerk: ${score.title}`" />
+    <Head :title="`Bewerk: ${form.title || 'Stuk'}`" />
 
     <AuthenticatedLayout>
         <template #header>
