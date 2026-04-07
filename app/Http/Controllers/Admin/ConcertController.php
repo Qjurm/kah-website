@@ -72,6 +72,9 @@ class ConcertController extends Controller
         $concert->load('scores');
         $scores = Score::orderBy('number')->get(['id', 'title', 'composer', 'number']);
 
+        // Format date as YYYY-MM-DD for HTML input type="date"
+        $concert->date = $concert->date?->format('Y-m-d');
+
         return Inertia::render('Admin/Concerts/Edit', [
             'concert' => $concert,
             'scores'  => $scores,
