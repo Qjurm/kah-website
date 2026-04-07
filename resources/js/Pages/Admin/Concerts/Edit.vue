@@ -52,7 +52,7 @@ const photoUrl = props.concert.photo_path
     : null;
 
 function submit() {
-    form.post(route('beheer.concerten.update', props.concert.id), { forceFormData: true });
+    form.put(route('beheer.concerten.update', props.concert.id), { forceFormData: true });
 }
 
 const stepLabels = ['Concertgegevens', 'Stukken koppelen'];
