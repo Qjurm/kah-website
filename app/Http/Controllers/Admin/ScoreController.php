@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ScoreResource;
+use App\Http\Resources\InstrumentResource;
 use App\Models\Instrument;
 use App\Models\Score;
 use App\Models\ScorePart;
@@ -19,16 +21,16 @@ class ScoreController extends Controller
         $scores = Score::withCount('parts')->orderBy('number')->paginate(20);
 
         return Inertia::render('Admin/Scores/Index', [
-            'scores' => $scores,
+            'scores' => ScoreResource::collection($scores),
         ]);
     }
 
     public function create(): Response
     {
-        $instruments = Instrument::orderBy('display_order')->pluck('name');
+        $instruments = Instrument::orderBy('display_order')->get();
 
         return Inertia::render('Admin/Scores/Create', [
-            'instruments' => $instruments,
+            'instruments' => InstrumentResource::collection($instruments),
         ]);
     }
 
@@ -70,11 +72,11 @@ class ScoreController extends Controller
     public function edit(Score $score): Response
     {
         $score->load('parts');
-        $instruments = Instrument::orderBy('display_order')->pluck('name');
+        $instruments = Instrument::orderBy('display_order')->get();
 
         return Inertia::render('Admin/Scores/Edit', [
-            'score'       => $score,
-            'instruments' => $instruments,
+            'score'       => new ScoreResource($score),
+            'instruments' => InstrumentResource::collection($instruments),
         ]);
     }
 

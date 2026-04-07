@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class UserController extends Controller
         $users = User::orderBy('name')->paginate(20);
 
         return Inertia::render('Admin/Users/Index', [
-            'users' => $users,
+            'users' => UserResource::collection($users),
         ]);
     }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ConcertResource;
+use App\Http\Resources\ScoreResource;
 use App\Models\Concert;
 use App\Models\Score;
 use Illuminate\Http\RedirectResponse;
@@ -18,16 +20,16 @@ class ConcertController extends Controller
         $concerts = Concert::orderByDesc('date')->paginate(20);
 
         return Inertia::render('Admin/Concerts/Index', [
-            'concerts' => $concerts,
+            'concerts' => ConcertResource::collection($concerts),
         ]);
     }
 
     public function create(): Response
     {
-        $scores = Score::orderBy('number')->get(['id', 'title', 'composer', 'number']);
+        $scores = Score::orderBy('number')->get();
 
         return Inertia::render('Admin/Concerts/Create', [
-            'scores' => $scores,
+            'scores' => ScoreResource::collection($scores),
         ]);
     }
 
@@ -70,14 +72,11 @@ class ConcertController extends Controller
     public function edit(Concert $concert): Response
     {
         $concert->load('scores');
-        $scores = Score::orderBy('number')->get(['id', 'title', 'composer', 'number']);
-
-        // Format date as YYYY-MM-DD for HTML input type="date"
-        $concert->date = $concert->date?->format('Y-m-d');
+        $scores = Score::orderBy('number')->get();
 
         return Inertia::render('Admin/Concerts/Edit', [
-            'concert' => $concert,
-            'scores'  => $scores,
+            'concert' => new ConcertResource($concert),
+            'scores'  => ScoreResource::collection($scores),
         ]);
     }
 
