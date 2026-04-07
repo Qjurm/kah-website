@@ -74,7 +74,7 @@ class ScoreController extends Controller
         $score->load('parts');
         $instruments = Instrument::orderBy('display_order')->get();
 
-        return Inertia::render('Admin/Scores/Edit', [
+        $data = [
             'score' => [
                 'id'         => $score->id,
                 'number'     => $score->number,
@@ -96,7 +96,11 @@ class ScoreController extends Controller
                 'name'          => $i->name,
                 'display_order' => $i->display_order,
             ])->toArray(),
-        ]);
+        ];
+
+        ray('Score Edit Data', $data);
+
+        return Inertia::render('Admin/Scores/Edit', $data);
     }
 
     public function update(Request $request, Score $score): RedirectResponse

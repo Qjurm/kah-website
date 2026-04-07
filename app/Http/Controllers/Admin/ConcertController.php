@@ -74,7 +74,7 @@ class ConcertController extends Controller
         $concert->load('scores');
         $scores = Score::orderBy('number')->get();
 
-        return Inertia::render('Admin/Concerts/Edit', [
+        $data = [
             'concert' => [
                 'id'         => $concert->id,
                 'title'      => $concert->title,
@@ -98,7 +98,11 @@ class ConcertController extends Controller
                 'title'    => $s->title,
                 'composer' => $s->composer,
             ])->toArray(),
-        ]);
+        ];
+
+        ray('Concert Edit Data', $data);
+
+        return Inertia::render('Admin/Concerts/Edit', $data);
     }
 
     public function update(Request $request, Concert $concert): RedirectResponse
