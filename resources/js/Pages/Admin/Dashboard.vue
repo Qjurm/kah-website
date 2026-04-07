@@ -41,7 +41,7 @@ defineProps({
 
                 <!-- Navigation cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <Link :href="route('admin.scores.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
+                    <Link :href="route('beheer.bladmuziek.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
                         <div class="flex items-center gap-4 mb-3">
                             <div class="bg-blue-100 text-blue-900 p-3 rounded-xl group-hover:bg-blue-900 group-hover:text-white transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@ defineProps({
                         <p class="text-gray-500 text-sm">Voeg stukken toe, bewerk ze en upload de parts als PDF.</p>
                     </Link>
 
-                    <Link :href="route('admin.concerts.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
+                    <Link :href="route('beheer.concerten.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
                         <div class="flex items-center gap-4 mb-3">
                             <div class="bg-blue-100 text-blue-900 p-3 rounded-xl group-hover:bg-blue-900 group-hover:text-white transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ defineProps({
                         <p class="text-gray-500 text-sm">Beheer concerten en koppel stukken aan een concert.</p>
                     </Link>
 
-                    <Link :href="route('admin.users.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
+                    <Link :href="route('beheer.gebruikers.index')" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-500 hover:shadow-md transition-all">
                         <div class="flex items-center gap-4 mb-3">
                             <div class="bg-blue-100 text-blue-900 p-3 rounded-xl group-hover:bg-blue-900 group-hover:text-white transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

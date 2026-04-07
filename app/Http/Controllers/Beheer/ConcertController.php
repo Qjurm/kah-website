@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Beheer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Concert;
@@ -64,7 +64,7 @@ class ConcertController extends Controller
 
         $concert->scores()->sync($validated['score_ids'] ?? []);
 
-        return redirect()->route('admin.concerts.index')->with('success', 'Concert aangemaakt.');
+        return redirect()->route('beheer.concerten.index')->with('success', 'Concert aangemaakt.');
     }
 
     public function edit(Concert $concert): Response
@@ -114,7 +114,7 @@ class ConcertController extends Controller
 
         $concert->scores()->sync($validated['score_ids'] ?? []);
 
-        return redirect()->route('admin.concerts.index')->with('success', 'Concert bijgewerkt.');
+        return redirect()->route('beheer.concerten.index')->with('success', 'Concert bijgewerkt.');
     }
 
     public function destroy(Concert $concert): RedirectResponse
@@ -125,6 +125,6 @@ class ConcertController extends Controller
 
         $concert->delete();
 
-        return redirect()->route('admin.concerts.index')->with('success', 'Concert verwijderd.');
+        return redirect()->route('beheer.concerten.index')->with('success', 'Concert verwijderd.');
     }
 }

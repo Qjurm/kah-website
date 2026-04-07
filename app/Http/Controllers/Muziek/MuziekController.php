@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Publiek;
+namespace App\Http\Controllers\Muziek;
 
-use App\Http\Controllers\Controller;
 use App\Models\Concert;
 use App\Models\Score;
 use App\Models\ScorePart;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,7 +24,7 @@ class MuziekController extends Controller
             ->first();
 
         return Inertia::render('Muziek/Index', [
-            'scores'         => $scores,
+            'scores' => $scores,
             'currentConcert' => $currentConcert,
         ]);
     }

@@ -11,7 +11,7 @@ const form = useForm({
 });
 
 function submit() {
-    form.post(route('admin.users.store'));
+    form.post(route('beheer.gebruikers.store'));
 }
 </script>
 
@@ -90,7 +90,7 @@ function submit() {
                             >
                                 Aanmaken
                             </button>
-                            <Link :href="route('admin.users.index')" class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                            <Link :href="route('beheer.gebruikers.index')" class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
                                 Annuleren
                             </Link>
                         </div>

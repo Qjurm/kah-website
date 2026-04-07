@@ -21,7 +21,7 @@ const filteredScores = computed(() => {
 
 function destroy(score) {
     if (confirm(`Weet je zeker dat je "${score.title}" wilt verwijderen?`)) {
-        router.delete(route('admin.scores.destroy', score.id));
+        router.delete(route('beheer.bladmuziek.destroy', score.id));
     }
 }
 </script>
@@ -33,7 +33,7 @@ function destroy(score) {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Stukken beheren</h2>
-                <Link :href="route('admin.scores.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors">
+                <Link :href="route('beheer.bladmuziek.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors">
                     + Nieuw stuk
                 </Link>
             </div>
@@ -76,10 +76,10 @@ function destroy(score) {
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ score.composer }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ score.arranger || '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ score.parts_count }}</td>
-                                <td class="px-6 py-4 text-right text-sm space-x-3">
-                                    <Link :href="route('admin.scores.edit', score.id)" class="text-blue-600 hover:text-blue-900 font-medium">Bewerken</Link>
-                                    <Link :href="route('admin.scores.edit', score.id)" class="text-green-600 hover:text-green-900 font-medium">Partijen</Link>
-                                    <button @click="destroy(score)" class="text-red-600 hover:text-red-900 font-medium">Verwijderen</button>
+                                <td class="px-6 py-4 text-right text-sm space-x-2">
+                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium text-xs">Bewerken</Link>
+                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium text-xs">+ Partijen</Link>
+                                    <button @click="destroy(score)" class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium text-xs">Verwijderen</button>
                                 </td>
                             </tr>
                             <tr v-if="!filteredScores.length">
@@ -109,7 +109,7 @@ function destroy(score) {
                 </div>
 
                 <div class="mt-4">
-                    <Link :href="route('admin.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar dashboard</Link>
+                    <Link :href="route('beheer.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar dashboard</Link>
                 </div>
             </div>
         </div>

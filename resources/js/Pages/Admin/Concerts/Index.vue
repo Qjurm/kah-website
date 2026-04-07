@@ -8,12 +8,12 @@ defineProps({
 
 function destroy(concert) {
     if (confirm(`Concert "${concert.title}" verwijderen?`)) {
-        router.delete(route('admin.concerts.destroy', concert.id));
+        router.delete(route('beheer.concerten.destroy', concert.id));
     }
 }
 
 function toggleCurrent(concert) {
-    router.put(route('admin.concerts.update', concert.id), {
+    router.put(route('beheer.concerten.update', concert.id), {
         title: concert.title,
         date: concert.date,
         location: concert.location,
@@ -34,7 +34,7 @@ function formatDate(d) {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Concerten beheren</h2>
-                <Link :href="route('admin.concerts.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors">
+                <Link :href="route('beheer.concerten.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors">
                     + Nieuw concert
                 </Link>
             </div>
@@ -71,7 +71,7 @@ function formatDate(d) {
                                     </button>
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm space-x-3">
-                                    <Link :href="route('admin.concerts.edit', concert.id)" class="text-blue-600 hover:text-blue-900 font-medium">Bewerken</Link>
+                                    <Link :href="route('beheer.concerten.edit', concert.id)" class="text-blue-600 hover:text-blue-900 font-medium">Bewerken</Link>
                                     <button @click="destroy(concert)" class="text-red-600 hover:text-red-900 font-medium">Verwijderen</button>
                                 </td>
                             </tr>
@@ -83,7 +83,7 @@ function formatDate(d) {
                 </div>
 
                 <div class="mt-4">
-                    <Link :href="route('admin.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar dashboard</Link>
+                    <Link :href="route('beheer.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar dashboard</Link>
                 </div>
             </div>
         </div>

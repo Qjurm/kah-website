@@ -56,7 +56,7 @@ function submit() {
     form.removed_part_ids = removedPartIds.value;
     form.new_parts = newParts.value;
     form._method = 'PUT';
-    form.post(route('admin.scores.update', props.score.id), {
+    form.post(route('beheer.bladmuziek.update', props.score.id), {
         forceFormData: true,
     });
 }
@@ -69,7 +69,7 @@ function submit() {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Stuk bewerken</h2>
-                <Link :href="route('admin.scores.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
+                <Link :href="route('beheer.bladmuziek.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
             </div>
         </template>
 
@@ -218,7 +218,7 @@ function submit() {
                             <span v-else>Wijzigingen opslaan</span>
                         </button>
                         <Link
-                            :href="route('admin.scores.index')"
+                            :href="route('beheer.bladmuziek.index')"
                             class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                         >
                             Annuleren

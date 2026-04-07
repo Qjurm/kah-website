@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Beheer;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -42,6 +42,6 @@ class UserController extends Controller
             'role' => $validated['role'],
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'Gebruiker aangemaakt.');
+        return redirect()->route('beheer.gebruikers.index')->with('success', 'Gebruiker aangemaakt.');
     }
 }

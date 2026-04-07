@@ -1,13 +1,13 @@
 <?php
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\MuziekController;
+use App\Http\Controllers\Muziek\MuziekController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ScoreController;
-use App\Http\Controllers\Admin\ScorePartController;
-use App\Http\Controllers\Admin\ConcertController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Beheer\DashboardController;
+use App\Http\Controllers\Beheer\ScoreController;
+use App\Http\Controllers\Beheer\ScorePartController;
+use App\Http\Controllers\Beheer\ConcertController;
+use App\Http\Controllers\Beheer\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public

@@ -36,7 +36,7 @@ function removeInstrument(idx) {
 }
 
 function submit() {
-    form.post(route('admin.scores.store'), { forceFormData: true });
+    form.post(route('beheer.bladmuziek.store'), { forceFormData: true });
 }
 </script>
 
@@ -47,7 +47,7 @@ function submit() {
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">Nieuw stuk toevoegen</h2>
-                <Link :href="route('admin.scores.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
+                <Link :href="route('beheer.bladmuziek.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
             </div>
         </template>
 
@@ -171,7 +171,7 @@ function submit() {
                             <span v-else>Stuk opslaan</span>
                         </button>
                         <Link
-                            :href="route('admin.scores.index')"
+                            :href="route('beheer.bladmuziek.index')"
                             class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                         >
                             Annuleren
