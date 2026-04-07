@@ -10,6 +10,9 @@ const props = defineProps({
     instruments: Array,
 });
 
+// DEBUG: Log what we receive
+console.log('Score Edit - props:', JSON.stringify({ score: props.score, instruments: props.instruments?.length }, null, 2));
+
 // Existing parts (kept from DB)
 const keptParts = ref([]);
 const removedPartIds = ref([]);
