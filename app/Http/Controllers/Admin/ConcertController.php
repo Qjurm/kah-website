@@ -69,8 +69,11 @@ class ConcertController extends Controller
         return redirect()->route('beheer.concerten.index')->with('success', 'Concert aangemaakt.');
     }
 
-    public function edit(Concert $concert): Response
+    public function edit($id): Response
     {
+        $concert = Concert::findOrFail($id);
+        ray('Concert from findOrFail:', $concert);
+        
         $concert->load('scores');
         $scores = Score::orderBy('number')->get();
 

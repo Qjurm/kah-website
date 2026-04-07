@@ -69,11 +69,10 @@ class ScoreController extends Controller
         return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek aangemaakt.');
     }
 
-    public function edit(Score $score): Response
+    public function edit($id): Response
     {
-        ray('Score ID from route:', $score->id);
-        ray('Score exists:', $score->exists);
-        ray('Score model:', $score);
+        $score = Score::findOrFail($id);
+        ray('Score from findOrFail:', $score);
         
         $score->load('parts');
         $instruments = Instrument::orderBy('display_order')->get();
