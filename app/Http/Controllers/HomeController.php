@@ -3,13 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Concert;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function index(): Response
+    public function index()
     {
+        // Redirect authenticated musicians to dashboard
+        if (Auth::check() && Auth::user()->isMusician()) {
+            return Redirect::route('dashboard');
+        }
+
         $upcomingConcerts = Concert::where('date', '>=', now()->toDateString())
             ->orderBy('date', 'asc')
             ->limit(6)
