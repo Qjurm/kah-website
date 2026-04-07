@@ -12,7 +12,7 @@ const page = usePage();
 
 const homeRoute = computed(() => {
     const role = page.props.auth?.user?.role;
-    if (role === 'admin') return route('admin.dashboard');
+    if (role === 'admin') return route('beheer.dashboard');
     if (role === 'musician') return route('muziek.index');
     return route('home');
 });
@@ -45,22 +45,22 @@ const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
                             >
                                 <NavLink
                                     v-if="isAdmin"
-                                    :href="route('admin.dashboard')"
-                                    :active="route().current('admin.dashboard')"
+                                    :href="route('beheer.dashboard')"
+                                    :active="route().current('beheer.dashboard')"
                                 >
                                     Dashboard
                                 </NavLink>
                                 <NavLink
                                     v-if="isAdmin"
-                                    :href="route('admin.concerts.index')"
-                                    :active="route().current('admin.concerts.*')"
+                                    :href="route('beheer.concerten.index')"
+                                    :active="route().current('beheer.concerten.*')"
                                 >
                                     Concerten
                                 </NavLink>
                                 <NavLink
                                     v-if="isAdmin"
-                                    :href="route('admin.scores.index')"
-                                    :active="route().current('admin.scores.*')"
+                                    :href="route('beheer.bladmuziek.index')"
+                                    :active="route().current('beheer.bladmuziek.*')"
                                 >
                                     Stukken
                                 </NavLink>
@@ -174,22 +174,22 @@ const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
                             v-if="isAdmin"
-                            :href="route('admin.dashboard')"
-                            :active="route().current('admin.dashboard')"
+                            :href="route('beheer.dashboard')"
+                            :active="route().current('beheer.dashboard')"
                         >
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             v-if="isAdmin"
-                            :href="route('admin.concerts.index')"
-                            :active="route().current('admin.concerts.*')"
+                            :href="route('beheer.concerten.index')"
+                            :active="route().current('beheer.concerten.*')"
                         >
                             Concerten
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             v-if="isAdmin"
-                            :href="route('admin.scores.index')"
-                            :active="route().current('admin.scores.*')"
+                            :href="route('beheer.bladmuziek.index')"
+                            :active="route().current('beheer.bladmuziek.*')"
                         >
                             Stukken
                         </ResponsiveNavLink>
