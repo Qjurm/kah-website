@@ -50,7 +50,12 @@ watch(
 );
 
 const instrumentOptions = computed(() =>
-    (props.instruments ?? []).map((name) => ({ value: name, label: name }))
+    (props.instruments ?? []).map((instr) => {
+        // Handle both string names and object resources
+        const name = typeof instr === 'string' ? instr : instr.name;
+        const value = typeof instr === 'string' ? instr : instr.name;
+        return { value, label: name };
+    })
 );
 const selectedInstrument = ref(null);
 
