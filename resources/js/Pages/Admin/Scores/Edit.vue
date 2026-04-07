@@ -44,8 +44,9 @@ watch(
             number: newScore.number || '',
         });
 
-        // Reset part tracking
-        keptParts.value = [...(newScore.parts || [])];
+        // Reset part tracking - handle both wrapped and unwrapped data
+        const parts = newScore.parts?.data ? newScore.parts.data : (newScore.parts || []);
+        keptParts.value = [...parts];
         removedPartIds.value = [];
         newParts.value = [];
     },
