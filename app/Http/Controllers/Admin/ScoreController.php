@@ -53,13 +53,15 @@ class ScoreController extends Controller
 
         foreach ($validated['parts'] ?? [] as $i => $part) {
             $pdfFile = $request->file("parts.{$i}.pdf");
+            $path = null;
             if ($pdfFile) {
                 $path = $pdfFile->store("scores/{$score->id}", 'public');
-                $score->parts()->create([
-                    'instrument' => $part['instrument'],
-                    'pdf_path'   => $path,
-                ]);
             }
+            // Create part even if no PDF uploaded yet
+            $score->parts()->create([
+                'instrument' => $part['instrument'],
+                'pdf_path'   => $path,
+            ]);
         }
 
         return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek aangemaakt.');
@@ -109,13 +111,15 @@ class ScoreController extends Controller
 
         foreach ($validated['new_parts'] ?? [] as $i => $part) {
             $pdfFile = $request->file("new_parts.{$i}.pdf");
+            $path = null;
             if ($pdfFile) {
                 $path = $pdfFile->store("scores/{$score->id}", 'public');
-                $score->parts()->create([
-                    'instrument' => $part['instrument'],
-                    'pdf_path'   => $path,
-                ]);
             }
+            // Create part even if no PDF uploaded yet
+            $score->parts()->create([
+                'instrument' => $part['instrument'],
+                'pdf_path'   => $path,
+            ]);
         }
 
         return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek bijgewerkt.');
