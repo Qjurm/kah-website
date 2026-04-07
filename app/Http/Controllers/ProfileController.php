@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Instrument;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,9 +19,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        $userInstruments = $user->instruments()->get();
+        $allInstruments = Instrument::orderBy('display_order')->get();
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'userInstruments' => $userInstruments,
+            'availableInstruments' => $allInstruments,
         ]);
     }
 
@@ -38,6 +45,32 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Update user's instruments.
+     */
+    public function updateInstruments(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'instruments' => 'array|required',
+            'instruments.*' => 'integer|exists:instruments,id',
+            'primary_instrument' => 'nullable|integer|exists:instruments,id',
+        ]);
+
+        $user = $request->user();
+
+        // Sync instruments with is_primary flag
+        $syncData = [];
+        foreach ($request->instruments as $instrumentId) {
+            $syncData[$instrumentId] = [
+                'is_primary' => $request->primary_instrument == $instrumentId,
+            ];
+        }
+
+        $user->instruments()->sync($syncData);
+
+        return Redirect::route('profile.edit')->with('status', 'Instrumenten bijgewerkt.');
     }
 
     /**

@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import UpdateInstrumentsForm from './Partials/UpdateInstrumentsForm.vue';
 import { Head } from '@inertiajs/vue3';
 
 defineProps({
@@ -11,6 +12,14 @@ defineProps({
     },
     status: {
         type: String,
+    },
+    userInstruments: {
+        type: Array,
+        default: () => [],
+    },
+    availableInstruments: {
+        type: Array,
+        default: () => [],
     },
 });
 </script>
@@ -35,6 +44,16 @@ defineProps({
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                        class="max-w-xl"
+                    />
+                </div>
+
+                <div
+                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
+                >
+                    <UpdateInstrumentsForm
+                        :user-instruments="userInstruments"
+                        :available-instruments="availableInstruments"
                         class="max-w-xl"
                     />
                 </div>
