@@ -1,25 +1,25 @@
 <?php
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Muziek\MuziekController;
+use App\Http\Controllers\Music\MusicController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Beheer\DashboardController;
-use App\Http\Controllers\Beheer\ScoreController;
-use App\Http\Controllers\Beheer\ScorePartController;
-use App\Http\Controllers\Beheer\ConcertController;
-use App\Http\Controllers\Beheer\UserController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ScoreController;
+use App\Http\Controllers\Admin\ScorePartController;
+use App\Http\Controllers\Admin\ConcertController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Muziek (auth + musician/admin)
+// Music (auth + musician/admin)
 Route::middleware(['auth', 'musician'])->group(function () {
-    Route::get('/muziek', [MuziekController::class, 'index'])->name('muziek.index');
-    Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MuziekController::class, 'download'])->name('muziek.download');
+    Route::get('/muziek', [MusicController::class, 'index'])->name('muziek.index');
+    Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MusicController::class, 'download'])->name('muziek.download');
 });
 
-// Beheer (Admin Panel)
+// Admin (Admin Panel) - URLs stay Dutch for users
 Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('bladmuziek', ScoreController::class);

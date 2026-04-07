@@ -22,12 +22,12 @@ import { Link } from '@inertiajs/vue3';
                     <a href="#contact" class="text-sm text-slate-300 hover:text-yellow-400 transition-colors hidden sm:block">
                         Contact
                     </a>
-                    <Link
-                        :href="route('login')"
+                    <a
+                        href="/login"
                         class="text-sm font-semibold bg-yellow-500 text-slate-900 px-4 py-1.5 rounded-lg hover:bg-yellow-400 transition-colors"
                     >
                         Inloggen
-                    </Link>
+                    </a>
                 </div>
             </div>
         </div>
