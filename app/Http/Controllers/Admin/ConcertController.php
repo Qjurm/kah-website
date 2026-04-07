@@ -92,12 +92,14 @@ class ConcertController extends Controller
                     'number'   => $s->number,
                     'title'    => $s->title,
                     'composer' => $s->composer,
+                ])->toArray(),
             ],
             'scores' => $scores->map(fn ($s) => [
                 'id'       => $s->id,
                 'number'   => $s->number,
                 'title'    => $s->title,
                 'composer' => $s->composer,
+            ])->toArray(),
         ];
 
 
