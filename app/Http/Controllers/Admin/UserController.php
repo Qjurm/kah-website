@@ -19,8 +19,22 @@ class UserController extends Controller
         $users = User::where('approved', true)->orderBy('name')->paginate(20);
 
         return Inertia::render('Admin/Users/Index', [
-            'pendingUsers' => UserResource::collection($pendingUsers),
-            'users' => UserResource::collection($users),
+            'pendingUsers' => $pendingUsers->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'created_at' => $u->created_at,
+                'approved' => $u->approved,
+            ])->toArray(),
+            'users' => $users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'created_at' => $u->created_at,
+                'approved' => $u->approved,
+            ])->toArray(),
         ]);
     }
 
@@ -46,5 +60,17 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('beheer.gebruikers.index')->with('success', 'Gebruiker aangemaakt.');
+    }
+
+    public function approve(User $user): RedirectResponse
+    {
+        $user->update(['approved' => true]);
+        return redirect()->route('beheer.gebruikers.index')->with('success', $user->name . ' goedgekeurd.');
+    }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        $user->delete();
+        return redirect()->route('beheer.gebruikers.index')->with('success', 'Gebruiker verwijderd.');
     }
 }
