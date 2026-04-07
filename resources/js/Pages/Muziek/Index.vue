@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
+import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 
 const props = defineProps({
     scores: Array,
@@ -70,11 +72,16 @@ function getPartDisplayName(part) {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+                <!-- Section header -->
+                <SectionHeader 
+                    title="Alle stukken"
+                    subtitle="Bekijk alle beschikbare stukken en download je partijen"
+                />
+
                 <!-- Intro Card -->
-                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">Welkom in de muziekbibliotheek</h3>
-                    <p class="text-gray-700 text-sm">Hier vind je alle muziekstukken van je orkest. Selecteer je instrument(en) hieronder en je ziet alleen de relevante partijen. Je kunt je partijen rechtstreeks hier downloaden, of via je persoonlijke dashboard.</p>
-                </div>
+                <TipsCard>
+                    Hier vind je alle muziekstukken van je orkest. Selecteer je instrument(en) hieronder en je ziet alleen de relevante partijen. Je kunt je partijen rechtstreeks hier downloaden, of via je persoonlijke dashboard.
+                </TipsCard>
 
                 <!-- Instrument Selector -->
                 <div v-if="userInstruments && userInstruments.length > 0" class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">

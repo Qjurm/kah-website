@@ -1,29 +1,3 @@
-<script setup>
-import { ref } from 'vue';
-
-defineProps({
-    modelValue: Array,
-    label: String,
-    options: Array,
-    error: String,
-});
-
-defineEmits(['update:modelValue']);
-
-const isOpen = ref(false);
-
-const handleSelect = (optionId) => {
-    const newValue = modelValue || [];
-    if (newValue.includes(optionId)) {
-        // Remove
-        emit('update:modelValue', newValue.filter(id => id !== optionId));
-    } else {
-        // Add
-        emit('update:modelValue', [...newValue, optionId]);
-    }
-};
-</script>
-
 <template>
     <div>
         <label v-if="label" class="block text-sm font-medium text-gray-700 mb-2">
@@ -63,4 +37,30 @@ const handleSelect = (optionId) => {
         </div>
         <span v-if="error" class="text-red-500 text-sm mt-2 block">{{ error }}</span>
     </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+defineProps({
+    modelValue: Array,
+    label: String,
+    options: Array,
+    error: String,
+});
+
+defineEmits(['update:modelValue']);
+
+const isOpen = ref(false);
+
+const handleSelect = (optionId) => {
+    const newValue = modelValue || [];
+    if (newValue.includes(optionId)) {
+        // Remove
+        emit('update:modelValue', newValue.filter(id => id !== optionId));
+    } else {
+        // Add
+        emit('update:modelValue', [...newValue, optionId]);
+    }
+};
 </script>

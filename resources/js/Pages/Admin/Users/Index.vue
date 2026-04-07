@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
+import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -64,11 +66,16 @@ function submitNewUser() {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+                <!-- Section header -->
+                <SectionHeader 
+                    title="Gebruikers beheren"
+                    subtitle="Goedkeur registraties, beheer muzikanten en rollen"
+                />
+
                 <!-- Intro Card -->
-                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">Gebruikersbeheer</h3>
-                    <p class="text-gray-700 text-sm">Voeg muzikanten toe, goedkeur registraties, en beheer gebruikerrollen. Onderstaande secties geven je een overzicht van alle gebruikers.</p>
-                </div>
+                <TipsCard>
+                    Voeg muzikanten toe, goedkeur registraties, en beheer gebruikerrollen. Onderstaande secties geven je een overzicht van alle gebruikers.
+                </TipsCard>
 
                 <!-- SECTION 1: Pending Approvals -->
                 <div class="mb-6 bg-white rounded-2xl border border-red-200 overflow-hidden">

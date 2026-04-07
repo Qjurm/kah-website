@@ -1,6 +1,8 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
+import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 
 defineProps({
     concerts: Object,
@@ -46,11 +48,16 @@ function formatDate(d) {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+                <!-- Section header -->
+                <SectionHeader 
+                    title="Concerten beheren"
+                    subtitle="Voeg concerten toe, koppel stukken, en beheer datums"
+                />
+
                 <!-- Intro Card -->
-                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">Concertplanning</h3>
-                    <p class="text-gray-700 text-sm">Plan je concerten in, voeg datum en locatie toe, en koppel muziekstukken. Markeer het huidige concert zodat muzikanten hun relevante partijen kunnen downloaden. Muzikanten zien het actuele concert prominent op hun dashboard.</p>
-                </div>
+                <TipsCard>
+                    Plan je concerten in, voeg datum en locatie toe, en koppel muziekstukken. Markeer het huidige concert zodat muzikanten hun relevante partijen kunnen downloaden. Muzikanten zien het actuele concert prominent op hun dashboard.
+                </TipsCard>
 
                 <!-- Current Concert Banner -->
                 <div v-if="concerts.data.some(c => c.is_current)" class="mb-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
@@ -114,14 +121,15 @@ function formatDate(d) {
                 </div>
 
                 <!-- Helper Card -->
-                <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">💡 Handige tips</h3>
-                    <ul class="text-gray-700 text-sm space-y-1 list-disc list-inside">
-                        <li>Klik '🎯 Huidig' om aan te geven welk concert volgende is — muzikanten zien dit prominent</li>
-                        <li>Klik 'Bewerken' om stukken aan het concert toe te voegen</li>
-                        <li>Voeg altijd een datum in zodat muzikanten weten wanneer het concert is</li>
-                        <li>Muzikanten kunnen hun partijen voor het huidige concert downloaden op hun dashboard</li>
-                    </ul>
+                <div class="mt-8">
+                    <TipsCard>
+                        <div class="space-y-1">
+                            <div>Klik '🎯 Huidig' om aan te geven welk concert volgende is — muzikanten zien dit prominent</div>
+                            <div>Klik 'Bewerken' om stukken aan het concert toe te voegen</div>
+                            <div>Voeg altijd een datum in zodat muzikanten weten wanneer het concert is</div>
+                            <div>Muzikanten kunnen hun partijen voor het huidige concert downloaden op hun dashboard</div>
+                        </div>
+                    </TipsCard>
                 </div>
 
                 <div class="mt-8">

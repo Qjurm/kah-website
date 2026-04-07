@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
+import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 
 const props = defineProps({
     scores: Object,
@@ -45,11 +47,16 @@ function destroy(score) {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+                <!-- Section header -->
+                <SectionHeader 
+                    title="Stukken beheren"
+                    subtitle="Voeg stukken toe, upload partijen per instrument"
+                />
+
                 <!-- Intro Card -->
-                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">Bladmuziek beheren</h3>
-                    <p class="text-gray-700 text-sm">Hier beheer je alle muziekstukken van je orkest. Je kunt stukken toevoegen, de componentinfo aanpassen, en partijen uploaden per instrument. Klik op '+ Nieuw stuk' hieronder om te beginnen.</p>
-                </div>
+                <TipsCard>
+                    Hier beheer je alle muziekstukken van je orkest. Je kunt stukken toevoegen, de componentinfo aanpassen, en partijen uploaden per instrument. Klik op '+ Nieuw stuk' hieronder om te beginnen.
+                </TipsCard>
 
                 <!-- Search -->
                 <div class="mb-6">
@@ -129,14 +136,15 @@ function destroy(score) {
                 </div>
 
                 <!-- Helper Card -->
-                <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">💡 Handige tips</h3>
-                    <ul class="text-gray-700 text-sm space-y-1 list-disc list-inside">
-                        <li>Klik '📤 Partijen' om PDF-bestanden voor elk instrument te uploaden</li>
-                        <li>Gebruik het zoekveld om snel stukken te vinden</li>
-                        <li>De nummering helpt bij het organiseren van concertvolgordes</li>
-                        <li>Muzikanten kunnen hun partijen downloaden in het 'Muziek' menu</li>
-                    </ul>
+                <div class="mt-8">
+                    <TipsCard>
+                        <div class="space-y-1">
+                            <div>Klik '📤 Partijen' om PDF-bestanden voor elk instrument te uploaden</div>
+                            <div>Gebruik het zoekveld om snel stukken te vinden</div>
+                            <div>De nummering helpt bij het organiseren van concertvolgordes</div>
+                            <div>Muzikanten kunnen hun partijen downloaden in het 'Muziek' menu</div>
+                        </div>
+                    </TipsCard>
                 </div>
 
                 <div class="mt-8">
