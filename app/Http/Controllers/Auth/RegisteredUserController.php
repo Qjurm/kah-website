@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Instrument;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,11 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $instruments = Instrument::orderBy('display_order')->get(['id', 'name']);
+        
+        return Inertia::render('Auth/Register', [
+            'instruments' => $instruments,
+        ]);
     }
 
     /**
@@ -35,13 +40,25 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'instruments' => 'array|required_if:role,musician',
+            'instruments.*' => 'integer|exists:instruments,id',
+            'primary_instrument' => 'nullable|integer|exists:instruments,id',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->input('role', 'musician'),
         ]);
+
+        // Attach instruments if provided
+        if ($request->has('instruments') && is_array($request->instruments)) {
+            foreach ($request->instruments as $instrumentId) {
+                $isPrimary = $request->primary_instrument == $instrumentId;
+                $user->instruments()->attach($instrumentId, ['is_primary' => $isPrimary]);
+            }
+        }
 
         event(new Registered($user));
 

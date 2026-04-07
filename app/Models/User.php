@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -32,6 +33,20 @@ class User extends Authenticatable
             'password' => 'hashed',
             'approved' => 'boolean',
         ];
+    }
+
+    public function instruments(): BelongsToMany
+    {
+        return $this->belongsToMany(Instrument::class, 'user_instrument')
+                    ->withPivot('is_primary')
+                    ->withTimestamps();
+    }
+
+    public function primaryInstrument(): ?Instrument
+    {
+        return $this->instruments()
+                    ->wherePivot('is_primary', true)
+                    ->first();
     }
 
     public function isAdmin(): bool

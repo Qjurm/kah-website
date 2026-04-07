@@ -16,17 +16,23 @@ class MusicController extends Controller
 {
     public function index(): Response
     {
-        $scores = Score::with('parts')->orderBy('number')->get();
+        $user = auth()->user();
+        $scores = Score::with(['parts.instrument'])->orderBy('number')->get();
 
         $currentConcert = Concert::where('is_current', true)
             ->with(['scores' => function ($query) {
-                $query->orderBy('number')->with('parts');
+                $query->orderBy('number')->with('parts.instrument');
             }])
             ->first();
+
+        $userInstruments = $user ? $user->instruments()->orderBy('display_order')->get() : [];
+        $primaryInstrument = $user ? $user->primaryInstrument() : null;
 
         return Inertia::render('Muziek/Index', [
             'scores' => $scores,
             'currentConcert' => $currentConcert,
+            'userInstruments' => $userInstruments,
+            'primaryInstrument' => $primaryInstrument,
         ]);
     }
 
@@ -34,6 +40,11 @@ class MusicController extends Controller
     {
         abort_if($part->score_id !== $score->id, 404);
 
-        return Storage::disk('public')->download($part->pdf_path, $part->instrument . '.pdf');
+        $filename = $part->instrument?->name ?? $part->instrument;
+        if ($part->part_number && $part->part_number > 1) {
+            $filename .= ' ' . $part->part_number;
+        }
+
+        return Storage::disk('public')->download($part->pdf_path, $filename . '.pdf');
     }
 }

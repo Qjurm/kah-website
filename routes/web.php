@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Music\MusicController;
+use App\Http\Controllers\MusicianDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ScoreController;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 
 // Public
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Musician Dashboard
+Route::middleware(['auth', 'musician'])->get('/dashboard', [MusicianDashboardController::class, 'index'])->name('dashboard');
 
 // Music (auth + musician/admin)
 Route::middleware(['auth', 'musician'])->group(function () {

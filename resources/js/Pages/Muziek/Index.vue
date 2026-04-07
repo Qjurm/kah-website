@@ -6,18 +6,36 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 const props = defineProps({
     scores: Array,
     currentConcert: Object,
+    userInstruments: Array,
+    primaryInstrument: Object,
 });
 
 const search = ref('');
+const selectedInstrumentId = ref(props.primaryInstrument?.id || null);
 const expandedScores = ref(new Set());
 
+const currentInstrument = computed(() => {
+    if (!selectedInstrumentId.value) return null;
+    return props.userInstruments?.find(inst => inst.id === selectedInstrumentId.value);
+});
+
 const filteredScores = computed(() => {
-    if (!search.value) return props.scores;
+    let filtered = props.scores;
+
+    // Filter by selected instrument
+    if (selectedInstrumentId.value) {
+        filtered = filtered.filter(score =>
+            score.parts.some(p => p.instrument_id === selectedInstrumentId.value)
+        );
+    }
+
+    // Apply search
+    if (!search.value) return filtered;
     const q = search.value.toLowerCase();
-    return props.scores.filter(score =>
+    return filtered.filter(score =>
         score.title.toLowerCase().includes(q) ||
         score.composer.toLowerCase().includes(q) ||
-        score.parts.some(p => p.instrument.toLowerCase().includes(q))
+        score.parts.some(p => p.instrument?.name?.toLowerCase().includes(q))
     );
 });
 
@@ -28,6 +46,13 @@ function toggleScore(id) {
         expandedScores.value.add(id);
     }
     expandedScores.value = new Set(expandedScores.value);
+}
+
+function getPartDisplayName(part) {
+    const baseName = part.instrument?.name || part.instrument;
+    return part.part_number && part.part_number > 1 
+        ? `${baseName} ${part.part_number}`
+        : baseName;
 }
 </script>
 
@@ -41,6 +66,26 @@ function toggleScore(id) {
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Instrument Selector -->
+                <div v-if="userInstruments && userInstruments.length > 0" class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                    <label class="text-sm font-semibold text-gray-700 block mb-3">Mijn instrumenten</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            v-for="instrument in userInstruments"
+                            :key="instrument.id"
+                            @click="selectedInstrumentId = instrument.id"
+                            :class="[
+                                'px-4 py-2 rounded-lg font-medium transition-all',
+                                selectedInstrumentId === instrument.id
+                                    ? 'bg-blue-900 text-white'
+                                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                            ]"
+                        >
+                            {{ instrument.name }}
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Current Concert -->
                 <div v-if="currentConcert" class="mb-10 bg-blue-900 rounded-2xl p-8 text-white">
@@ -65,16 +110,29 @@ function toggleScore(id) {
                             <div class="font-semibold text-white">{{ score.title }}</div>
                             <div class="text-blue-300 text-sm">{{ score.composer }}</div>
                             <div v-if="score.parts && score.parts.length" class="mt-3 flex flex-wrap gap-2">
+                                <!-- Prioritize user's selected instrument if available -->
                                 <a
-                                    v-for="part in score.parts"
-                                    :key="part.id"
-                                    :href="route('muziek.download', { score: score.id, part: part.id })"
-                                    class="inline-flex items-center gap-1 bg-yellow-500 text-blue-900 text-xs font-semibold px-2 py-1 rounded hover:bg-yellow-400 transition-colors"
+                                    v-if="selectedInstrumentId && score.parts.find(p => p.instrument_id === selectedInstrumentId)"
+                                    :key="score.parts.find(p => p.instrument_id === selectedInstrumentId).id"
+                                    :href="route('muziek.download', { score: score.id, part: score.parts.find(p => p.instrument_id === selectedInstrumentId).id })"
+                                    class="inline-flex items-center gap-1 bg-yellow-500 text-blue-900 text-xs font-semibold px-2 py-1 rounded hover:bg-yellow-400 transition-colors border-2 border-yellow-600"
                                 >
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                    {{ part.instrument }}
+                                    {{ getPartDisplayName(score.parts.find(p => p.instrument_id === selectedInstrumentId)) }} ★
+                                </a>
+                                <!-- Show other parts -->
+                                <a
+                                    v-for="part in score.parts.filter(p => !selectedInstrumentId || p.instrument_id !== selectedInstrumentId)"
+                                    :key="part.id"
+                                    :href="route('muziek.download', { score: score.id, part: part.id })"
+                                    class="inline-flex items-center gap-1 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                >
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    {{ getPartDisplayName(part) }}
                                 </a>
                             </div>
                             <div v-else class="text-blue-400 text-xs mt-2">Geen parts beschikbaar</div>
@@ -138,8 +196,21 @@ function toggleScore(id) {
 
                             <div v-if="expandedScores.has(score.id)" class="px-5 pb-4 bg-gray-50">
                                 <div v-if="score.parts.length" class="flex flex-wrap gap-2 pt-3">
+                                    <!-- Prioritize user's selected instrument if available -->
                                     <a
-                                        v-for="part in score.parts"
+                                        v-if="selectedInstrumentId && score.parts.find(p => p.instrument_id === selectedInstrumentId)"
+                                        :key="score.parts.find(p => p.instrument_id === selectedInstrumentId).id"
+                                        :href="route('muziek.download', { score: score.id, part: score.parts.find(p => p.instrument_id === selectedInstrumentId).id })"
+                                        class="inline-flex items-center gap-2 bg-yellow-500 text-blue-900 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors border-2 border-yellow-600"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                        {{ getPartDisplayName(score.parts.find(p => p.instrument_id === selectedInstrumentId)) }} ★
+                                    </a>
+                                    <!-- Show other parts -->
+                                    <a
+                                        v-for="part in score.parts.filter(p => !selectedInstrumentId || p.instrument_id !== selectedInstrumentId)"
                                         :key="part.id"
                                         :href="route('muziek.download', { score: score.id, part: part.id })"
                                         class="inline-flex items-center gap-2 bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors"
@@ -147,7 +218,7 @@ function toggleScore(id) {
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                         </svg>
-                                        {{ part.instrument }}
+                                        {{ getPartDisplayName(part) }}
                                     </a>
                                 </div>
                                 <div v-else class="pt-3 text-sm text-gray-400">
