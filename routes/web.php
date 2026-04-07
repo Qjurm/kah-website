@@ -21,6 +21,11 @@ Route::middleware(['auth', 'musician'])->get('/mijn-instrument', [MusicianDashbo
 Route::middleware(['auth', 'musician'])->group(function () {
     Route::get('/muziek', [MusicController::class, 'index'])->name('muziek.index');
     Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MusicController::class, 'download'])->name('muziek.download');
+    
+    // Redirect routes for dual-role users
+    Route::get('/muziek-home', function () {
+        return redirect()->route('muziek.index');
+    });
 });
 
 // Admin (Admin Panel) - URLs stay Dutch for users
@@ -31,6 +36,11 @@ Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(f
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class);
     Route::resource('gebruikers', UserController::class)->only(['index', 'create', 'store']);
+});
+
+// Redirect route for dual-role users returning from musician mode to admin
+Route::middleware(['auth', 'admin'])->get('/admin-home', function () {
+    return redirect()->route('beheer.dashboard');
 });
 
 // Profile
