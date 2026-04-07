@@ -10,13 +10,9 @@ use Inertia\Response;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        // Redirect authenticated musicians to dashboard
-        if (Auth::check() && Auth::user()->isMusician()) {
-            return Redirect::route('dashboard');
-        }
-
+        // Homepage is always public, no redirect
         $upcomingConcerts = Concert::where('date', '>=', now()->toDateString())
             ->orderBy('date', 'asc')
             ->limit(6)
