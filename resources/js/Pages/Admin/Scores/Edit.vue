@@ -99,8 +99,10 @@ function removeExistingPart(part) {
 
 function addNewInstrument() {
     if (!selectedInstrument.value) return;
+    // Get instrument name from options
+    const instrumentName = instrumentOptions.value.find(opt => opt.value === selectedInstrument.value)?.label || selectedInstrument.value;
     // Allow duplicates! Users can add "Trompet 1" and "Trompet 2"
-    newParts.value.push({ instrument: selectedInstrument.value, pdf: null });
+    newParts.value.push({ instrument: instrumentName, pdf: null });
     selectedInstrument.value = null;
 }
 
