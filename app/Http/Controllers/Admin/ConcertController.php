@@ -72,7 +72,6 @@ class ConcertController extends Controller
     public function edit($id): Response
     {
         $concert = Concert::findOrFail($id);
-        ray('Concert from findOrFail:', $concert);
         
         $concert->load('scores');
         $scores = Score::orderBy('number')->get();
@@ -93,23 +92,22 @@ class ConcertController extends Controller
                     'number'   => $s->number,
                     'title'    => $s->title,
                     'composer' => $s->composer,
-                ])->toArray(),
             ],
             'scores' => $scores->map(fn ($s) => [
                 'id'       => $s->id,
                 'number'   => $s->number,
                 'title'    => $s->title,
                 'composer' => $s->composer,
-            ])->toArray(),
         ];
 
-        ray('Concert Edit Data', $data);
 
         return Inertia::render('Admin/Concerts/Edit', $data);
     }
 
-    public function update(Request $request, Concert $concert): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
+        $concert = Concert::findOrFail($id);
+        
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'date'        => 'required|date',

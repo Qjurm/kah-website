@@ -72,7 +72,6 @@ class ScoreController extends Controller
     public function edit($id): Response
     {
         $score = Score::findOrFail($id);
-        ray('Score from findOrFail:', $score);
         
         $score->load('parts');
         $instruments = Instrument::orderBy('display_order')->get();
@@ -92,22 +91,21 @@ class ScoreController extends Controller
                     'instrument' => $p->instrument,
                     'pdf_path'   => $p->pdf_path,
                     'created_at' => $p->created_at,
-                ])->toArray(),
             ],
             'instruments' => $instruments->map(fn ($i) => [
                 'id'            => $i->id,
                 'name'          => $i->name,
                 'display_order' => $i->display_order,
-            ])->toArray(),
         ];
 
-        ray('Score Edit Data', $data);
 
         return Inertia::render('Admin/Scores/Edit', $data);
     }
 
-    public function update(Request $request, Score $score): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
+        $score = Score::findOrFail($id);
+        
         $validated = $request->validate([
             'title'                  => 'required|string|max:255',
             'composer'               => 'required|string|max:255',
