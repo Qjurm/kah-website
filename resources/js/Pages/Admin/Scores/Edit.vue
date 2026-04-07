@@ -49,14 +49,17 @@ watch(
     { immediate: true, deep: true }
 );
 
-const instrumentOptions = computed(() =>
-    (props.instruments ?? []).map((instr) => {
+const instrumentOptions = computed(() => {
+    if (!props.instruments || !Array.isArray(props.instruments)) {
+        return [];
+    }
+    return props.instruments.map((instr) => {
         // Handle both string names and object resources
-        const name = typeof instr === 'string' ? instr : instr.name;
-        const value = typeof instr === 'string' ? instr : instr.name;
+        const name = typeof instr === 'string' ? instr : (instr.name || '');
+        const value = typeof instr === 'string' ? instr : (instr.name || '');
         return { value, label: name };
-    })
-);
+    });
+});
 const selectedInstrument = ref(null);
 
 async function createNewInstrument(name) {
