@@ -32,18 +32,16 @@ class DashboardController extends Controller
             ->get();
 
         // Instrument breakdown by category
+        $caseStatement = "CASE 
+            WHEN name IN ('Piccolo', 'Dwarsfluit', 'Hobo', 'Klarinet', 'Basklarinet', 'Fagot', 'Altsaxofoon', 'Tenorsaxofoon', 'Baritonsaxofoon') THEN 'woodwinds'
+            WHEN name IN ('Trompet', 'Hoorn', 'Trombone', 'Bastrombone', 'Euphonium', 'Tuba', 'Contrabas') THEN 'brass'
+            ELSE 'percussion'
+        END";
+        
         $instrumentBreakdown = DB::table('instruments')
-            ->selectRaw('COUNT(*) as count')
-            ->groupBy(DB::raw("CASE 
-                WHEN name IN ('Piccolo', 'Dwarsfluit', 'Hobo', 'Klarinet', 'Basklarinet', 'Fagot', 'Altsaxofoon', 'Tenorsaxofoon', 'Baritonsaxofoon') THEN 'woodwinds'
-                WHEN name IN ('Trompet', 'Hoorn', 'Trombone', 'Bastrombone', 'Euphonium', 'Tuba', 'Contrabas') THEN 'brass'
-                ELSE 'percussion'
-            END as category"))
-            ->pluck('count', DB::raw("CASE 
-                WHEN name IN ('Piccolo', 'Dwarsfluit', 'Hobo', 'Klarinet', 'Basklarinet', 'Fagot', 'Altsaxofoon', 'Tenorsaxofoon', 'Baritonsaxofoon') THEN 'woodwinds'
-                WHEN name IN ('Trompet', 'Hoorn', 'Trombone', 'Bastrombone', 'Euphonium', 'Tuba', 'Contrabas') THEN 'brass'
-                ELSE 'percussion'
-            END as category"))
+            ->selectRaw("$caseStatement as category, COUNT(*) as count")
+            ->groupBy(DB::raw($caseStatement))
+            ->pluck('count', 'category')
             ->toArray();
 
         return Inertia::render('Admin/Dashboard', [
