@@ -83,7 +83,7 @@ function submitNewUser() {
                                 </svg>
                             </div>
                             <div class="text-left">
-                                <h3 class="font-bold text-gray-900">⏳ In afwachting van goedkeuring</h3>
+                                <h3 class="font-bold text-gray-900">In afwachting van goedkeuring</h3>
                                 <p class="text-gray-500 text-xs">Nieuwe aanvragen van muzikanten</p>
                             </div>
                             <span class="ml-auto bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -102,9 +102,9 @@ function submitNewUser() {
                     <div v-if="expandedSections.pending" class="p-6">
                         <div v-if="!pendingUsers || pendingUsers.length === 0" class="text-center py-8 text-gray-400">
                             <svg class="w-12 h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
-                            Geen aanvragen in afwachting ✓
+                            Geen aanvragen in afwachting
                         </div>
                         <div v-else class="space-y-3">
                             <div v-for="user in pendingUsers" :key="user.id" class="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -156,7 +156,7 @@ function submitNewUser() {
                                 </svg>
                             </div>
                             <div class="text-left">
-                                <h3 class="font-bold text-gray-900">✅ Actieve Muzikanten</h3>
+                                <h3 class="font-bold text-gray-900">Actieve Muzikanten</h3>
                                 <p class="text-gray-500 text-xs">Goedgekeurde leden</p>
                             </div>
                             <span class="ml-auto bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -194,7 +194,7 @@ function submitNewUser() {
                                                 ? 'bg-blue-100 text-blue-800'
                                                 : 'bg-green-100 text-green-800'"
                                         >
-                                            {{ user.role === 'admin' ? '👤 Admin' : '🎵 Muzikant' }}
+                                            {{ user.role === 'admin' ? 'Admin' : 'Muzikant' }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
@@ -202,7 +202,7 @@ function submitNewUser() {
                                     </td>
                                     <td class="px-6 py-4 text-right text-sm space-x-2">
                                         <Link :href="route('beheer.gebruikers.edit', user.id)" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">
-                                            ✏️ Bewerken
+                                            Bewerken
                                         </Link>
                                     </td>
                                 </tr>
@@ -236,7 +236,7 @@ function submitNewUser() {
                                 </svg>
                             </div>
                             <div class="text-left">
-                                <h3 class="font-bold text-gray-900">➕ Voeg gebruiker toe</h3>
+                                <h3 class="font-bold text-gray-900">Voeg gebruiker toe</h3>
                                 <p class="text-gray-500 text-xs">Voeg handmatig een nieuwe muzikant toe</p>
                             </div>
                         </div>

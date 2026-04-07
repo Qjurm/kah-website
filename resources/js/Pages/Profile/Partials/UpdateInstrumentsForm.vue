@@ -53,7 +53,7 @@ function deselectAllInstruments() {
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-bold text-gray-900">🎵 Mijn Instrumenten</h2>
+            <h2 class="text-lg font-bold text-gray-900">Mijn Instrumenten</h2>
             <p class="mt-1 text-sm text-gray-600">
                 Welke instrumenten bespeel je? Selecteer alle instrumenten en kies je voornaamste.
             </p>
@@ -134,14 +134,14 @@ function deselectAllInstruments() {
                         {{ availableInstruments.find(i => i.id === form.primary_instrument)?.name }}
                     </p>
                     <p v-else class="text-red-700 font-semibold">
-                        ⚠️ Kies je voornaamste instrument hierboven
+                        Kies je voornaamste instrument hierboven
                     </p>
                 </div>
             </div>
 
             <!-- Instructions for older users -->
             <div class="bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-4">
-                <h3 class="font-semibold text-gray-900 mb-2">💡 Hoe het werkt:</h3>
+                <h3 class="font-semibold text-gray-900 mb-2">Hoe het werkt:</h3>
                 <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside">
                     <li>Vink alle instrumenten aan die je speelt</li>
                     <li>Kies welk instrument je voornaamste is (dit is je standaard filterinstrument)</li>
@@ -152,7 +152,7 @@ function deselectAllInstruments() {
 
             <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
                 <PrimaryButton :disabled="form.processing || !form.instruments || form.instruments.length === 0 || !form.primary_instrument">
-                    💾 Opslaan
+                    Opslaan
                 </PrimaryButton>
                 <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0" leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
                     <p v-show="form.recentlySuccessful" class="text-sm text-green-600 font-semibold">

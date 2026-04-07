@@ -54,7 +54,7 @@ function formatDate(d) {
 
                 <!-- Current Concert Banner -->
                 <div v-if="concerts.data.some(c => c.is_current)" class="mb-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">🎵 Huidig concert</h3>
+                    <h3 class="font-semibold text-gray-900 mb-2">Huidig concert</h3>
                     <div v-for="concert in concerts.data.filter(c => c.is_current)" :key="concert.id" class="text-yellow-900">
                         <p class="font-bold">{{ concert.title }}</p>
                         <p class="text-sm">{{ formatDate(concert.date) }} · {{ concert.location }}</p>
@@ -94,10 +94,10 @@ function formatDate(d) {
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm space-x-3">
                                     <Link :href="route('beheer.concerten.edit', concert.id)" class="text-blue-600 hover:text-blue-900 font-medium text-sm">
-                                        ✏️ Bewerken
+                                        Bewerken
                                     </Link>
                                     <button @click="destroy(concert)" class="text-red-600 hover:text-red-900 font-medium text-sm">
-                                        🗑️ Verwijderen
+                                        Verwijderen
                                     </button>
                                 </td>
                             </tr>
@@ -118,7 +118,7 @@ function formatDate(d) {
                     <h3 class="font-semibold text-gray-900 mb-2">💡 Handige tips</h3>
                     <ul class="text-gray-700 text-sm space-y-1 list-disc list-inside">
                         <li>Klik '🎯 Huidig' om aan te geven welk concert volgende is — muzikanten zien dit prominent</li>
-                        <li>Klik '✏️ Bewerken' om stukken aan het concert toe te voegen</li>
+                        <li>Klik 'Bewerken' om stukken aan het concert toe te voegen</li>
                         <li>Voeg altijd een datum in zodat muzikanten weten wanneer het concert is</li>
                         <li>Muzikanten kunnen hun partijen voor het huidige concert downloaden op hun dashboard</li>
                     </ul>

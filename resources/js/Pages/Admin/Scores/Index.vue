@@ -92,13 +92,10 @@ function destroy(score) {
                                 </td>
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
                                     <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium text-xs">
-                                        ✏️ Bewerken
-                                    </Link>
-                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium text-xs">
-                                        📤 Partijen
+                                        Bewerken
                                     </Link>
                                     <button @click="destroy(score)" class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium text-xs">
-                                        🗑️ Verwijderen
+                                        Verwijderen
                                     </button>
                                 </td>
                             </tr>

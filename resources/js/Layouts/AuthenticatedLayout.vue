@@ -48,10 +48,10 @@ const toggleLink = computed(() => {
 
 const toggleButtonText = computed(() => {
     if (currentMode.value === 'admin') {
-        return '👤 Terug naar Muziek';
+        return 'Terug naar Muziek';
     }
     if (currentMode.value === 'musician') {
-        return '⚙️ Admin Panel';
+        return 'Admin Panel';
     }
     return null;
 });
