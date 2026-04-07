@@ -120,7 +120,7 @@ function submitNewUser() {
                                         <h4 class="font-semibold text-gray-900">{{ user.name }}</h4>
                                         <p class="text-gray-600 text-sm">{{ user.email }}</p>
                                         <p class="text-gray-500 text-xs mt-1">
-                                            Aangevraagd: {{ new Date(user.created_at).toLocaleDateString('nl-NL') }}
+                                            Aangevraagd: {{ new Date(user.created_at || Date.now()).toLocaleDateString('nl-NL') }}
                                         </p>
                                     </div>
                                 </div>
