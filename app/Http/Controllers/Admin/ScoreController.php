@@ -75,7 +75,7 @@ class ScoreController extends Controller
         $instruments = Instrument::orderBy('display_order')->get();
 
         return Inertia::render('Admin/Scores/Edit', [
-            'score'       => new ScoreResource($score),
+            'score'       => ScoreResource::make($score)->resolve(),
             'instruments' => InstrumentResource::collection($instruments),
         ]);
     }

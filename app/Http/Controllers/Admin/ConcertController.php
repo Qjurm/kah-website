@@ -75,7 +75,7 @@ class ConcertController extends Controller
         $scores = Score::orderBy('number')->get();
 
         return Inertia::render('Admin/Concerts/Edit', [
-            'concert' => new ConcertResource($concert),
+            'concert' => ConcertResource::make($concert)->resolve(),
             'scores'  => ScoreResource::collection($scores),
         ]);
     }
