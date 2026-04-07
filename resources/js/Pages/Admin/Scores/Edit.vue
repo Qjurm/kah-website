@@ -112,8 +112,16 @@ function removeNewPart(idx) {
 
 function submit() {
     form.removed_part_ids = removedPartIds.value;
-    form.new_parts = newParts.value;
-    form.post(route('beheer.bladmuziek.update', props.score.id), {
+    
+    // Flatten new_parts for FormData compatibility
+    newParts.value.forEach((part, idx) => {
+        form[`new_parts.${idx}.instrument`] = part.instrument;
+        if (part.pdf) {
+            form[`new_parts.${idx}.pdf`] = part.pdf;
+        }
+    });
+    
+    form.put(route('beheer.bladmuziek.update', props.score.id), {
         forceFormData: true,
     });
 }
