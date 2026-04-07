@@ -25,7 +25,7 @@ class ScorePartController extends Controller
             'pdf_path' => $path,
         ]);
 
-        return redirect()->route('admin.scores.edit', $score)->with('success', 'Part toegevoegd.');
+        return redirect()->route('beheer.bladmuziek.edit', $score)->with('success', 'Partij toegevoegd.');
     }
 
     public function destroy(ScorePart $part): RedirectResponse
@@ -34,6 +34,6 @@ class ScorePartController extends Controller
         $scoreId = $part->score_id;
         $part->delete();
 
-        return redirect()->route('admin.scores.edit', $scoreId)->with('success', 'Part verwijderd.');
+        return redirect()->route('beheer.bladmuziek.edit', $scoreId)->with('success', 'Partij verwijderd.');
     }
 }

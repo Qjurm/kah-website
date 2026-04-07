@@ -16,16 +16,17 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Muziek (auth + musician/admin)
 Route::middleware(['auth', 'musician'])->group(function () {
     Route::get('/muziek', [MuziekController::class, 'index'])->name('muziek.index');
-    Route::get('/muziek/scores/{score}/parts/{part}/download', [MuziekController::class, 'download'])->name('muziek.download');
+    Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MuziekController::class, 'download'])->name('muziek.download');
 });
 
-// Admin
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+// Beheer (Admin Panel)
+Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('scores', ScoreController::class);
-    Route::resource('scores.parts', ScorePartController::class)->shallow();
-    Route::resource('concerts', ConcertController::class);
-    Route::resource('users', UserController::class)->only(['index', 'create', 'store']);
+    Route::resource('bladmuziek', ScoreController::class);
+    Route::post('bladmuziek/{score}/partijen', [ScorePartController::class, 'store'])->name('bladmuziek.partijen.store');
+    Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
+    Route::resource('concerten', ConcertController::class);
+    Route::resource('gebruikers', UserController::class)->only(['index', 'create', 'store']);
 });
 
 // Profile

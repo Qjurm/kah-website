@@ -17,7 +17,7 @@ const form = useForm({
     location: '',
     photo: null,
     is_current: false,
-    is_public: false,
+    is_public: true,
     score_ids: [],
 });
 

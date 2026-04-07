@@ -62,7 +62,7 @@ class ScoreController extends Controller
             }
         }
 
-        return redirect()->route('admin.scores.index')->with('success', 'Score aangemaakt.');
+        return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek aangemaakt.');
     }
 
     public function edit(Score $score): Response
@@ -118,7 +118,7 @@ class ScoreController extends Controller
             }
         }
 
-        return redirect()->route('admin.scores.index')->with('success', 'Score bijgewerkt.');
+        return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek bijgewerkt.');
     }
 
     public function destroy(Score $score): RedirectResponse
@@ -129,6 +129,6 @@ class ScoreController extends Controller
         }
         $score->delete();
 
-        return redirect()->route('admin.scores.index')->with('success', 'Score verwijderd.');
+        return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek verwijderd.');
     }
 }
