@@ -53,11 +53,6 @@ function destroy(score) {
                     subtitle="Voeg stukken toe, upload partijen per instrument"
                 />
 
-                <!-- Intro Card -->
-                <TipsCard>
-                    Hier beheer je alle muziekstukken van je orkest. Je kunt stukken toevoegen, de componentinfo aanpassen, en partijen uploaden per instrument. Klik op '+ Nieuw stuk' hieronder om te beginnen.
-                </TipsCard>
-
                 <!-- Search -->
                 <div class="mb-6">
                     <div class="relative max-w-sm">

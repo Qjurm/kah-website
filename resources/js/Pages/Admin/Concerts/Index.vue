@@ -54,11 +54,6 @@ function formatDate(d) {
                     subtitle="Voeg concerten toe, koppel stukken, en beheer datums"
                 />
 
-                <!-- Intro Card -->
-                <TipsCard>
-                    Plan je concerten in, voeg datum en locatie toe, en koppel muziekstukken. Markeer het huidige concert zodat muzikanten hun relevante partijen kunnen downloaden. Muzikanten zien het actuele concert prominent op hun dashboard.
-                </TipsCard>
-
                 <!-- Current Concert Banner -->
                 <div v-if="concerts.data.some(c => c.is_current)" class="mb-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
                     <h3 class="font-semibold text-gray-900 mb-2">Huidig concert</h3>
