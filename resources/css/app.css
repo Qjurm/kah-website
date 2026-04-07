@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* Achtergrond (Neutral uit je design) */
+        --background: 210 17% 98%;
+        --foreground: 222.2 84% 4.9%; /* Donkergrijze tekst voor leesbaarheid */
+
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 84% 4.9%;
+
+        /* Primary (#002366) */
+        --primary: 219 100% 20%;
+        --primary-foreground: 210 40% 98%; /* Witte tekst op primaire knoppen */
+
+        /* Secondary (#D4AF37) */
+        --secondary: 46 65% 52%;
+        --secondary-foreground: 219 100% 20%; /* Navy tekst op gouden knoppen voor contrast */
+
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+
+        /* Accent / Tertiary (#AF8F2C) */
+        --accent: 45 60% 43%;
+        --accent-foreground: 210 40% 98%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+
+        /* Zorgt dat focus-ringen dezelfde navy kleur hebben */
+        --ring: 219 100% 20%;
+
+        --radius: 0.5rem;
+    }
+
+    /* ... eventueel je .dark mode variabelen ... */
+}

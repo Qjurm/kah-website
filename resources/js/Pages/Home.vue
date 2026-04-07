@@ -26,7 +26,7 @@ function formatDate(d) {
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo + name -->
                     <div class="flex items-center gap-3">
-                        <img src="/images/kah-logo.png" alt="KAH Logo" class="h-9 w-auto object-contain" />
+                        <img src="/images/kah.png" alt="KAH Logo" class="h-9 w-auto object-contain" />
                         <span class="hidden sm:block text-sm font-semibold text-slate-300 tracking-wide">
                             Koninklijke Almelosche Harmonie
                         </span>
@@ -91,7 +91,7 @@ function formatDate(d) {
                     <!-- Logo image -->
                     <div class="flex-shrink-0">
                         <img
-                            src="/images/kah-logo.png"
+                            src="/images/kah.png"
                             alt="Koninklijke Almelosche Harmonie"
                             class="w-64 sm:w-80 opacity-90 drop-shadow-2xl"
                         />
@@ -283,7 +283,7 @@ function formatDate(d) {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
                     <div>
                         <div class="flex items-center gap-3 mb-4">
-                            <img src="/images/kah-logo.png" alt="KAH" class="h-10 w-auto opacity-80" />
+                            <img src="/images/kah.png" alt="KAH" class="h-10 w-auto opacity-80" />
                         </div>
                         <p class="text-slate-400 text-sm leading-relaxed">
                             Een van de oudste harmonieorkesten van Nederland, trots gevestigd in Almelo.
