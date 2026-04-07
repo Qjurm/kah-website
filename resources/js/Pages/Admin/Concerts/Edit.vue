@@ -10,17 +10,20 @@ const props = defineProps({
     scores: Array,
 });
 
+// Debug: log props
+console.log('Concert Edit props:', props);
+
 const step = ref(1);
 
 const form = useForm({
     _method: 'PUT',
-    title: props.concert.title,
-    date: props.concert.date,
-    location: props.concert.location || '',
+    title: props.concert?.title || '',
+    date: props.concert?.date || '',
+    location: props.concert?.location || '',
     photo: null,
-    is_current: props.concert.is_current,
-    is_public: props.concert.is_public ?? false,
-    score_ids: props.concert.scores?.map((s) => s.id) ?? [],
+    is_current: props.concert?.is_current || false,
+    is_public: props.concert?.is_public ?? false,
+    score_ids: props.concert?.scores?.map((s) => s.id) ?? [],
 });
 
 // Score selection via SearchableSelect
@@ -52,7 +55,9 @@ const photoUrl = props.concert.photo_path
     : null;
 
 function submit() {
-    form.put(route('beheer.concerten.update', props.concert.id), { forceFormData: true });
+    // Use direct URL since route() might have stale Ziggy cache
+    const url = `/beheer/concerten/${props.concert.id}`;
+    form.put(url, { forceFormData: true });
 }
 
 const stepLabels = ['Concertgegevens', 'Stukken koppelen'];
