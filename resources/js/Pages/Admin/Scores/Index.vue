@@ -31,9 +31,12 @@ function destroy(score) {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Stukken beheren</h2>
-                <Link :href="route('beheer.bladmuziek.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-xl font-semibold leading-tight text-gray-800">Stukken beheren</h2>
+                    <p class="text-sm text-gray-600">Voeg stukken toe, upload partijen per instrument</p>
+                </div>
+                <Link :href="route('beheer.bladmuziek.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors whitespace-nowrap">
                     + Nieuw stuk
                 </Link>
             </div>
@@ -42,8 +45,14 @@ function destroy(score) {
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+                <!-- Intro Card -->
+                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">Bladmuziek beheren</h3>
+                    <p class="text-gray-700 text-sm">Hier beheer je alle muziekstukken van je orkest. Je kunt stukken toevoegen, de componentinfo aanpassen, en partijen uploaden per instrument. Klik op '+ Nieuw stuk' hieronder om te beginnen.</p>
+                </div>
+
                 <!-- Search -->
-                <div class="mb-4">
+                <div class="mb-6">
                     <div class="relative max-w-sm">
                         <input
                             v-model="search"
@@ -57,11 +66,12 @@ function destroy(score) {
                     </div>
                 </div>
 
+                <!-- Scores Table -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nr.</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titel</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Componist</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrangeur</th>
@@ -70,20 +80,33 @@ function destroy(score) {
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="score in filteredScores" :key="score.id" class="hover:bg-gray-50">
+                            <tr v-for="score in filteredScores" :key="score.id" class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 text-sm text-yellow-600 font-bold">{{ score.number }}</td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ score.title }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ score.composer }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ score.arranger || '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ score.parts_count }}</td>
+                                <td class="px-6 py-4 text-sm">
+                                    <span class="bg-blue-100 text-blue-900 font-semibold text-xs px-2 py-1 rounded">
+                                        {{ score.parts_count }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
-                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium text-xs">Bewerken</Link>
-                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium text-xs">+ Partijen</Link>
-                                    <button @click="destroy(score)" class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium text-xs">Verwijderen</button>
+                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium text-xs">
+                                        ✏️ Bewerken
+                                    </Link>
+                                    <Link :href="route('beheer.bladmuziek.edit', score.id)" class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium text-xs">
+                                        📤 Partijen
+                                    </Link>
+                                    <button @click="destroy(score)" class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium text-xs">
+                                        🗑️ Verwijderen
+                                    </button>
                                 </td>
                             </tr>
                             <tr v-if="!filteredScores.length">
                                 <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                    <svg class="w-12 h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
                                     {{ search ? 'Geen stukken gevonden voor deze zoekopdracht.' : 'Nog geen stukken toegevoegd.' }}
                                 </td>
                             </tr>
@@ -91,25 +114,38 @@ function destroy(score) {
                     </table>
 
                     <!-- Pagination -->
-                    <div v-if="scores.last_page > 1" class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-                        <span class="text-sm text-gray-500">{{ scores.from }}-{{ scores.to }} van {{ scores.total }}</span>
+                    <div v-if="props.scores.last_page > 1" class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
+                        <span class="text-sm text-gray-500">{{ props.scores.from }}-{{ props.scores.to }} van {{ props.scores.total }}</span>
                         <div class="flex gap-2">
                             <Link
-                                v-if="scores.prev_page_url"
-                                :href="scores.prev_page_url"
-                                class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
-                            >Vorige</Link>
+                                v-if="props.scores.prev_page_url"
+                                :href="props.scores.prev_page_url"
+                                class="px-3 py-1 border rounded text-sm hover:bg-gray-100 transition-colors"
+                            >⬅️ Vorige</Link>
                             <Link
-                                v-if="scores.next_page_url"
-                                :href="scores.next_page_url"
-                                class="px-3 py-1 border rounded text-sm hover:bg-gray-50"
-                            >Volgende</Link>
+                                v-if="props.scores.next_page_url"
+                                :href="props.scores.next_page_url"
+                                class="px-3 py-1 border rounded text-sm hover:bg-gray-100 transition-colors"
+                            >Volgende ➡️</Link>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <Link :href="route('beheer.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar dashboard</Link>
+                <!-- Helper Card -->
+                <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">💡 Handige tips</h3>
+                    <ul class="text-gray-700 text-sm space-y-1 list-disc list-inside">
+                        <li>Klik '📤 Partijen' om PDF-bestanden voor elk instrument te uploaden</li>
+                        <li>Gebruik het zoekveld om snel stukken te vinden</li>
+                        <li>De nummering helpt bij het organiseren van concertvolgordes</li>
+                        <li>Muzikanten kunnen hun partijen downloaden in het 'Muziek' menu</li>
+                    </ul>
+                </div>
+
+                <div class="mt-8">
+                    <Link :href="route('beheer.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm font-semibold">
+                        ← Terug naar dashboard
+                    </Link>
                 </div>
             </div>
         </div>

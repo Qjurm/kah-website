@@ -39,7 +39,10 @@ function getDaysUntil(date) {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">Mijn Muziekdashboard</h2>
+            <div class="flex flex-col gap-1">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">Mijn Muziekdashboard</h2>
+                <p class="text-sm text-gray-600">Jouw voornaamste instrument en de komende concerten</p>
+            </div>
         </template>
 
         <div class="py-8">
@@ -49,7 +52,7 @@ function getDaysUntil(date) {
                 <div v-if="primaryInstrument" class="mb-8 bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-semibold text-blue-200 mb-1">Mijn primaire instrument</div>
+                            <div class="text-sm font-semibold text-blue-200 mb-1">🎵 Mijn primaire instrument</div>
                             <h1 class="text-4xl font-bold mb-2">{{ primaryInstrument.name }}</h1>
                             <p class="text-blue-200">
                                 Je speelt {{ allInstruments.length }} instrument{{ allInstruments.length !== 1 ? 'en' : '' }}
@@ -72,6 +75,16 @@ function getDaysUntil(date) {
                                 {{ instrument.name }}
                             </span>
                         </div>
+                    </div>
+
+                    <!-- Change Instruments Button -->
+                    <div class="mt-6 pt-6 border-t border-blue-700">
+                        <Link
+                            :href="route('profile.edit')"
+                            class="inline-flex items-center gap-2 bg-yellow-500 text-blue-900 px-4 py-2 rounded-lg font-semibold hover:bg-yellow-400 transition-colors text-sm"
+                        >
+                            ✏️ Wijzig mijn instrumenten
+                        </Link>
                     </div>
                 </div>
 

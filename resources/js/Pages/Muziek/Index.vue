@@ -57,15 +57,24 @@ function getPartDisplayName(part) {
 </script>
 
 <template>
-    <Head title="Muziekaanbod" />
+    <Head title="Alle stukken" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">Muziekaanbod</h2>
+            <div class="flex flex-col gap-1">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">Alle stukken</h2>
+                <p class="text-sm text-gray-600">Bekijk alle beschikbare stukken en download je partijen</p>
+            </div>
         </template>
 
         <div class="py-8">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                <!-- Intro Card -->
+                <div class="mb-8 bg-blue-50 border-l-4 border-blue-900 rounded-lg p-6">
+                    <h3 class="font-semibold text-gray-900 mb-2">Welkom in de muziekbibliotheek</h3>
+                    <p class="text-gray-700 text-sm">Hier vind je alle muziekstukken van je orkest. Selecteer je instrument(en) hieronder en je ziet alleen de relevante partijen. Je kunt je partijen rechtstreeks hier downloaden, of via je persoonlijke dashboard.</p>
+                </div>
 
                 <!-- Instrument Selector -->
                 <div v-if="userInstruments && userInstruments.length > 0" class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">

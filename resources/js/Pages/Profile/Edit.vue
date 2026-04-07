@@ -25,15 +25,14 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head title="Mijn Profiel" />
 
     <AuthenticatedLayout>
         <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Profile
-            </h2>
+            <div class="flex flex-col gap-1">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">Mijn Profiel</h2>
+                <p class="text-sm text-gray-600">Persoonlijke gegevens, instrumenten en veiligheid</p>
+            </div>
         </template>
 
         <div class="py-12">
