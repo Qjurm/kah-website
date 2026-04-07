@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
         $user = $request->user();
 
         if ($user->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
+            return redirect()->intended(route('beheer.dashboard', absolute: false));
         }
 
         return redirect()->intended(route('muziek.index', absolute: false));

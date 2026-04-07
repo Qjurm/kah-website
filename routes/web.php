@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Musician Dashboard
-Route::middleware(['auth', 'musician'])->get('/dashboard', [MusicianDashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'musician'])->get('/mijn-instrument', [MusicianDashboardController::class, 'index'])->name('mijn-instrument');
 
 // Music (auth + musician/admin)
 Route::middleware(['auth', 'musician'])->group(function () {
