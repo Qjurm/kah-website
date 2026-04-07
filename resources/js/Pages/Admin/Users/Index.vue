@@ -208,9 +208,7 @@ function submitNewUser() {
                                         {{ new Date(user.created_at).toLocaleDateString('nl-NL') }}
                                     </td>
                                     <td class="px-6 py-4 text-right text-sm space-x-2">
-                                        <Link :href="route('beheer.gebruikers.edit', user.id)" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">
-                                            Bewerken
-                                        </Link>
+                                        <!-- Edit not available for users, only approve/reject -->
                                     </td>
                                 </tr>
                                 <tr v-if="!props.users.data.length">
