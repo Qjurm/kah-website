@@ -75,8 +75,29 @@ class ConcertController extends Controller
         $scores = Score::orderBy('number')->get();
 
         return Inertia::render('Admin/Concerts/Edit', [
-            'concert' => ConcertResource::make($concert)->resolve(),
-            'scores'  => ScoreResource::collection($scores),
+            'concert' => [
+                'id'         => $concert->id,
+                'title'      => $concert->title,
+                'date'       => $concert->date?->format('Y-m-d'),
+                'location'   => $concert->location,
+                'photo_path' => $concert->photo_path,
+                'is_current' => (bool) $concert->is_current,
+                'is_public'  => (bool) $concert->is_public,
+                'created_at' => $concert->created_at,
+                'updated_at' => $concert->updated_at,
+                'scores'     => $concert->scores->map(fn ($s) => [
+                    'id'       => $s->id,
+                    'number'   => $s->number,
+                    'title'    => $s->title,
+                    'composer' => $s->composer,
+                ])->toArray(),
+            ],
+            'scores' => $scores->map(fn ($s) => [
+                'id'       => $s->id,
+                'number'   => $s->number,
+                'title'    => $s->title,
+                'composer' => $s->composer,
+            ])->toArray(),
         ]);
     }
 

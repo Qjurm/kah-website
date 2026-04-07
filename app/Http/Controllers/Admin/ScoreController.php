@@ -75,8 +75,27 @@ class ScoreController extends Controller
         $instruments = Instrument::orderBy('display_order')->get();
 
         return Inertia::render('Admin/Scores/Edit', [
-            'score'       => ScoreResource::make($score)->resolve(),
-            'instruments' => InstrumentResource::collection($instruments),
+            'score' => [
+                'id'         => $score->id,
+                'number'     => $score->number,
+                'title'      => $score->title,
+                'composer'   => $score->composer,
+                'arranger'   => $score->arranger,
+                'created_at' => $score->created_at,
+                'updated_at' => $score->updated_at,
+                'parts'      => $score->parts->map(fn ($p) => [
+                    'id'         => $p->id,
+                    'score_id'   => $p->score_id,
+                    'instrument' => $p->instrument,
+                    'pdf_path'   => $p->pdf_path,
+                    'created_at' => $p->created_at,
+                ])->toArray(),
+            ],
+            'instruments' => $instruments->map(fn ($i) => [
+                'id'            => $i->id,
+                'name'          => $i->name,
+                'display_order' => $i->display_order,
+            ])->toArray(),
         ]);
     }
 
