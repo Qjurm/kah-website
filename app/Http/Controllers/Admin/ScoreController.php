@@ -71,6 +71,10 @@ class ScoreController extends Controller
 
     public function edit(Score $score): Response
     {
+        ray('Score ID from route:', $score->id);
+        ray('Score exists:', $score->exists);
+        ray('Score model:', $score);
+        
         $score->load('parts');
         $instruments = Instrument::orderBy('display_order')->get();
 
