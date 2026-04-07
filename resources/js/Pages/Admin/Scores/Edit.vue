@@ -10,21 +10,35 @@ const props = defineProps({
     instruments: Array,
 });
 
-// Existing parts (kept from DB)
-const keptParts = ref([...(props.score.parts ?? [])]);
+// Existing parts (kept from DB) - initialize empty
+const keptParts = ref([]);
 const removedPartIds = ref([]);
 // New parts to add
 const newParts = ref([]);
 
 const form = useForm({
-    title: props.score.title,
-    composer: props.score.composer,
-    arranger: props.score.arranger || '',
-    number: props.score.number,
+    title: '',
+    composer: '',
+    arranger: '',
+    number: '',
     removed_part_ids: [],
     new_parts: [],
     _method: '',
 });
+
+// Update form when score data loads
+const updateFormFromScore = () => {
+    if (props.score) {
+        form.title = props.score.title;
+        form.composer = props.score.composer;
+        form.arranger = props.score.arranger || '';
+        form.number = props.score.number;
+        keptParts.value = [...(props.score.parts ?? [])];
+    }
+};
+
+import { watch } from 'vue';
+watch(() => props.score, updateFormFromScore, { immediate: true, deep: true });
 
 const instrumentOptions = computed(() =>
     (props.instruments ?? []).map((name) => ({ value: name, label: name }))

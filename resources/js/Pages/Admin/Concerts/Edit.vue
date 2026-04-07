@@ -30,14 +30,30 @@ const concert = computed(() => {
 
 const form = useForm({
     _method: 'PUT',
-    title: concert.value?.title || '',
-    date: concert.value?.date || '',
-    location: concert.value?.location || '',
+    title: '',
+    date: '',
+    location: '',
     photo: null,
-    is_current: concert.value?.is_current || false,
-    is_public: concert.value?.is_public ?? false,
-    score_ids: concert.value?.scores?.map((s) => s.id) ?? [],
+    is_current: false,
+    is_public: false,
+    score_ids: [],
 });
+
+// Update form when concert data loads
+const updateFormFromConcert = () => {
+    if (concert.value) {
+        form.title = concert.value.title;
+        form.date = concert.value.date;
+        form.location = concert.value.location;
+        form.is_current = concert.value.is_current;
+        form.is_public = concert.value.is_public;
+        form.score_ids = concert.value.scores.map((s) => s.id);
+    }
+};
+
+// Watch for concert changes
+import { watch } from 'vue';
+watch(concert, updateFormFromConcert, { immediate: true, deep: true });
 
 // Score selection via SearchableSelect
 const scoreOptions = computed(() =>
