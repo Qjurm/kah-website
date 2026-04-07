@@ -47,6 +47,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect based on user role
+        $user = Auth::user();
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('beheer.dashboard', absolute: false));
+        }
+
+        return redirect()->intended(route('muziek.index', absolute: false));
     }
 }

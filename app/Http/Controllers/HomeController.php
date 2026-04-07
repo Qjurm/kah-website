@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Concert;
 use Inertia\Inertia;
 use Inertia\Response;

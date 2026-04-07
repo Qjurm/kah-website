@@ -26,6 +26,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Redirect should be to the musician page for new users
+        $response->assertRedirect(route('muziek.index', absolute: false));
     }
 }
