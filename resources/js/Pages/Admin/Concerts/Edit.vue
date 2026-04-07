@@ -10,20 +10,33 @@ const props = defineProps({
     scores: Array,
 });
 
-// Debug: log props
-console.log('Concert Edit props:', props);
-
 const step = ref(1);
+
+// Extract concert data safely
+const concert = computed(() => {
+    if (!props.concert) return null;
+    // Unpack the proxy to get actual object
+    return {
+        id: props.concert.id,
+        title: props.concert.title || '',
+        date: props.concert.date || '',
+        location: props.concert.location || '',
+        is_current: props.concert.is_current || false,
+        is_public: props.concert.is_public ?? false,
+        scores: props.concert.scores || [],
+        photo_path: props.concert.photo_path,
+    };
+});
 
 const form = useForm({
     _method: 'PUT',
-    title: props.concert?.title || '',
-    date: props.concert?.date || '',
-    location: props.concert?.location || '',
+    title: concert.value?.title || '',
+    date: concert.value?.date || '',
+    location: concert.value?.location || '',
     photo: null,
-    is_current: props.concert?.is_current || false,
-    is_public: props.concert?.is_public ?? false,
-    score_ids: props.concert?.scores?.map((s) => s.id) ?? [],
+    is_current: concert.value?.is_current || false,
+    is_public: concert.value?.is_public ?? false,
+    score_ids: concert.value?.scores?.map((s) => s.id) ?? [],
 });
 
 // Score selection via SearchableSelect
@@ -50,9 +63,11 @@ function removeScore(id) {
     form.score_ids = form.score_ids.filter((sid) => sid !== id);
 }
 
-const photoUrl = props.concert.photo_path
-    ? `/storage/${props.concert.photo_path}`
-    : null;
+const photoUrl = computed(() => 
+    concert.value?.photo_path
+        ? `/storage/${concert.value.photo_path}`
+        : null
+);
 
 function submit() {
     // Use direct URL since route() might have stale Ziggy cache
