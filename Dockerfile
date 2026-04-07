@@ -24,6 +24,9 @@ WORKDIR /app
 # Copy existing project
 COPY . .
 
+# Pull latest from GitHub
+RUN git pull origin main || true
+
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 RUN composer run-script post-autoload-dump || true
