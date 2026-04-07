@@ -27,14 +27,16 @@ class UserController extends Controller
                 'created_at' => $u->created_at,
                 'approved' => $u->approved,
             ])->toArray(),
-            'users' => $users->map(fn ($u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'email' => $u->email,
-                'role' => $u->role,
-                'created_at' => $u->created_at,
-                'approved' => $u->approved,
-            ])->toArray(),
+            'users' => [
+                'data' => $users->map(fn ($u) => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email, 'role' => $u->role, 'created_at' => $u->created_at, 'approved' => $u->approved])->toArray(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
+                'total' => $users->total(),
+                'last_page' => $users->lastPage(),
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'path' => $users->path(),
+            ],
         ]);
     }
 

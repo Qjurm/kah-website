@@ -166,7 +166,7 @@ function submitNewUser() {
                                 <p class="text-gray-500 text-xs">Goedgekeurde leden</p>
                             </div>
                             <span class="ml-auto bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                {{ props.users?.data?.length || 0 }}
+                                {{ props.users.data?.length || 0 }}
                             </span>
                         </div>
                         <svg
@@ -232,8 +232,8 @@ function submitNewUser() {
                         <div v-if="props.users.last_page > 1" class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50">
                             <span class="text-sm text-gray-500">{{ props.users.from }}-{{ props.users.to }} van {{ props.users.total }}</span>
                             <div class="flex gap-2">
-                                <Link v-if="props.users.prev_page_url" :href="props.users.prev_page_url" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">Vorige</Link>
-                                <Link v-if="props.users.next_page_url" :href="props.users.next_page_url" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">Volgende</Link>
+                                <Link v-if="props.users.current_page > 1" :href="`${props.users.path}?page=${props.users.current_page - 1}`" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">Vorige</Link>
+                                <Link v-if="props.users.current_page < props.users.last_page" :href="`${props.users.path}?page=${props.users.current_page + 1}`" class="px-3 py-1 border rounded text-sm hover:bg-gray-100">Volgende</Link>
                             </div>
                         </div>
                     </div>
