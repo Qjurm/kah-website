@@ -125,16 +125,15 @@ function submitNewUser() {
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <Link
-                                        :href="route('beheer.gebruikers.approve', user.id)"
-                                        method="put"
+                                    <button
+                                        @click="() => router.put(`/beheer/gebruikers/${user.id}/approve`)"
                                         class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors"
                                     >
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                         </svg>
                                         Goedkeuren
-                                    </Link>
+                                    </button>
                                     <button
                                         @click="deletePendingUser(user.id)"
                                         class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors"
