@@ -46,7 +46,7 @@ class User extends Authenticatable
     {
         return $this->instruments()
                     ->wherePivot('is_primary', true)
-                    ->first();
+                    ->first() ?? null;
     }
 
     public function isAdmin(): bool
