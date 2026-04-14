@@ -24,7 +24,6 @@ const form = useForm({
     title: '',
     composer: '',
     arranger: '',
-    number: '',
     removed_part_ids: [],
     new_parts: [],
     _method: 'PUT',
@@ -41,7 +40,6 @@ watch(
             title: newScore.title || '',
             composer: newScore.composer || '',
             arranger: newScore.arranger || '',
-            number: newScore.number || '',
         });
 
         // Reset part tracking - handle both wrapped and unwrapped data
@@ -173,16 +171,6 @@ function submit() {
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Volgnummer *</label>
-                            <input
-                                v-model="form.number"
-                                type="number"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                :class="{ 'border-red-500': form.errors.number }"
-                            />
-                            <p v-if="form.errors.number" class="text-red-500 text-sm mt-1">{{ form.errors.number }}</p>
-                        </div>
                     </div>
 
                     <!-- Existing parts -->
@@ -194,11 +182,19 @@ function submit() {
                                 :key="part.id"
                                 class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
                             >
-                                <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-                                    </svg>
-                                    <span class="text-sm font-medium text-gray-800">{{ part.instrument }}</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="text-sm font-medium text-gray-800">{{ part.instrument }}</span>
+                                    </div>
+                                    <a :href="route('beheer.bladmuziek.partijen.download', { score: score.id, part: part.id })" 
+                                       target="_blank"
+                                       class="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
+                                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                       Inzien / Downloaden
+                                    </a>
                                 </div>
                                 <button
                                     type="button"

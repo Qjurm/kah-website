@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ScorePart extends Model
 {
-    protected $fillable = ['score_id', 'instrument_id', 'part_number', 'pdf_path'];
+    protected $fillable = ['score_id', 'instrument_id', 'instrument', 'part_number', 'pdf_path'];
 
     public function score(): BelongsTo
     {

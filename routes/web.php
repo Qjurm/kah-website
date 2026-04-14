@@ -34,6 +34,7 @@ Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(f
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('bladmuziek', ScoreController::class);
     Route::post('bladmuziek/{score}/partijen', [ScorePartController::class, 'store'])->name('bladmuziek.partijen.store');
+    Route::get('bladmuziek/{score}/partijen/{part}/download', [ScoreController::class, 'download'])->name('bladmuziek.partijen.download');
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class);
     Route::resource('gebruikers', UserController::class)->only(['index', 'create', 'store']);
