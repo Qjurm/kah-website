@@ -189,7 +189,6 @@ function getPartDisplayName(part) {
                                 class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
                             >
                                 <div class="flex items-center gap-4">
-                                    <span class="text-yellow-500 font-bold text-sm w-8 text-right">{{ score.number }}</span>
                                     <div>
                                         <div class="font-semibold text-gray-900">{{ score.title }}</div>
                                         <div class="text-sm text-gray-500">

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Score extends Model
 {
-    protected $fillable = ['title', 'composer', 'arranger', 'number'];
+    protected $fillable = ['title', 'composer', 'arranger'];
 
     public function parts(): HasMany
     {

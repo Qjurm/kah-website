@@ -45,6 +45,7 @@ class MusicController extends Controller
             $filename .= ' ' . $part->part_number;
         }
 
-        return Storage::disk('public')->download($part->pdf_path, $filename . '.pdf');
+        $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
+        return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
     }
 }

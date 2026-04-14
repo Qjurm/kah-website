@@ -73,7 +73,6 @@ function destroy(score) {
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nr.</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titel</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Componist</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arrangeur</th>
@@ -83,7 +82,6 @@ function destroy(score) {
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <tr v-for="score in filteredScores" :key="score.id" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-yellow-600 font-bold">{{ score.number }}</td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ score.title }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ score.composer }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ score.arranger || '-' }}</td>
@@ -136,7 +134,6 @@ function destroy(score) {
                         <div class="space-y-1">
                             <div>Klik '📤 Partijen' om PDF-bestanden voor elk instrument te uploaden</div>
                             <div>Gebruik het zoekveld om snel stukken te vinden</div>
-                            <div>De nummering helpt bij het organiseren van concertvolgordes</div>
                             <div>Muzikanten kunnen hun partijen downloaden in het 'Muziek' menu</div>
                         </div>
                     </TipsCard>

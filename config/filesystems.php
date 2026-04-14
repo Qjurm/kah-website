@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        'scores' => [
+            'driver' => env('SCORES_DISK_DRIVER', 'local'),
+            'root' => env('SCORES_DISK_ROOT', storage_path('app/public')),
+            'url' => env('SCORES_DISK_URL', rtrim(env('APP_URL', 'http://localhost'), '/').'/storage'),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

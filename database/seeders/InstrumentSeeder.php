@@ -33,10 +33,10 @@ class InstrumentSeeder extends Seeder
         ];
 
         foreach ($instruments as $index => $name) {
-            Instrument::create([
-                'name' => $name,
-                'display_order' => $index + 1,
-            ]);
+            Instrument::updateOrCreate(
+                ['name' => $name],
+                ['display_order' => $index + 1]
+            );
         }
     }
 }
