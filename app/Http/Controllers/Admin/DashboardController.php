@@ -32,12 +32,12 @@ class DashboardController extends Controller
             ->get();
 
         // Instrument breakdown by category
-        $caseStatement = "CASE 
+        $caseStatement = "CASE
             WHEN name IN ('Piccolo', 'Dwarsfluit', 'Hobo', 'Klarinet', 'Basklarinet', 'Fagot', 'Altsaxofoon', 'Tenorsaxofoon', 'Baritonsaxofoon') THEN 'woodwinds'
             WHEN name IN ('Trompet', 'Hoorn', 'Trombone', 'Bastrombone', 'Euphonium', 'Tuba', 'Contrabas') THEN 'brass'
             ELSE 'percussion'
         END";
-        
+
         $instrumentBreakdown = DB::table('instruments')
             ->selectRaw("$caseStatement as category, COUNT(*) as count")
             ->groupBy(DB::raw($caseStatement))
@@ -50,7 +50,7 @@ class DashboardController extends Controller
                 'concerts' => Concert::count(),
                 'users' => User::count(),
                 'pendingUsers' => User::where('approved', false)->count(),
-                'currentConcert' => Concert::where('is_current', true)->first()?->title,
+                'currentConcert' => Concert::where('is_current', true)->first(),
             ],
             'pendingUsers' => $pendingUsers,
             'recentScores' => $recentScores,

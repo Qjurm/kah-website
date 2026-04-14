@@ -15,12 +15,13 @@ defineProps({
     instrumentBreakdown: Object,
 });
 
+
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('nl-NL', { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+    return new Date(date).toLocaleDateString('nl-NL', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
     });
 }
 </script>
@@ -40,7 +41,7 @@ function formatDate(date) {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 <!-- Section header -->
-                <SectionHeader 
+                <SectionHeader
                     title="Admin Dashboard"
                     subtitle="Beheer alle aspecten van je orkest"
                 />
@@ -51,13 +52,19 @@ function formatDate(date) {
                 </TipsCard>
 
                 <!-- Current concert banner -->
-                <InfoBanner 
+                <InfoBanner
                     v-if="stats.currentConcert"
                     title="Huidig Concert"
-                    :heading="stats.currentConcert"
-                    subtitle="Dit concert is momenteel actief"
+                    :heading="stats.currentConcert.title"
+                    subtitle="Dit is het concert waar we momenteel voor repeteren"
                     bgClass="bg-blue-900 text-white"
                 >
+                    <template #action>
+                        <Link :href="route('beheer.concerten.edit', stats.currentConcert.id)"
+                              class="bg-yellow-400 p-4 text-gray-900 py-2 rounded-lg hover:bg-yellow-300 text-center transition-colors font-semibold text-sm">
+                            + Concert bewerken
+                        </Link>
+                    </template>
                     <template #icon>
                         <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -68,8 +75,8 @@ function formatDate(date) {
                 <!-- Stat cards grid -->
                 <ActionGrid>
                     <!-- Stukken -->
-                    <StatCard 
-                        :stat="stats.scores" 
+                    <StatCard
+                        :stat="stats.scores"
                         label="Stukken in bibliotheek"
                     >
                         <template #icon>
@@ -78,16 +85,16 @@ function formatDate(date) {
                             </svg>
                         </template>
                         <template #action>
-                            <Link :href="route('beheer.bladmuziek.create')" 
-                                  class="mt-4 w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 text-center transition-colors font-semibold text-sm">
+                            <Link :href="route('beheer.bladmuziek.create')"
+                                  class="mt-4 p-4 w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 text-center transition-colors font-semibold text-sm">
                                 + Stuk toevoegen
                             </Link>
                         </template>
                     </StatCard>
 
                     <!-- Concerten -->
-                    <StatCard 
-                        :stat="stats.concerts" 
+                    <StatCard
+                        :stat="stats.concerts"
                         label="Geplande concerten"
                     >
                         <template #icon>
@@ -96,16 +103,16 @@ function formatDate(date) {
                             </svg>
                         </template>
                         <template #action>
-                            <Link :href="route('beheer.concerten.create')" 
-                                  class="mt-4 w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 text-center transition-colors font-semibold text-sm">
+                            <Link :href="route('beheer.concerten.create')"
+                                  class="mt-4 p-4 w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 text-center transition-colors font-semibold text-sm">
                                 + Concert toevoegen
                             </Link>
                         </template>
                     </StatCard>
 
                     <!-- Leden in afwachting -->
-                    <StatCard 
-                        :stat="stats.pendingUsers" 
+                    <StatCard
+                        :stat="stats.pendingUsers"
                         label="Leden in afwachting"
                     >
                         <template #icon>
@@ -114,8 +121,8 @@ function formatDate(date) {
                             </svg>
                         </template>
                         <template #action>
-                            <Link :href="route('beheer.gebruikers.index')" 
-                                  class="mt-4 w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 text-center transition-colors font-semibold text-sm">
+                            <Link :href="route('beheer.gebruikers.index')"
+                                  class="mt-4 p-4 w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 text-center transition-colors font-semibold text-sm">
                                 Goedkeuren
                             </Link>
                         </template>

@@ -11,18 +11,18 @@ defineProps({
 });
 
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('nl-NL', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    return new Date(date).toLocaleDateString('nl-NL', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 }
 
 function formatTime(date) {
-    return new Date(date).toLocaleTimeString('nl-NL', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+    return new Date(date).toLocaleTimeString('nl-NL', {
+        hour: '2-digit',
+        minute: '2-digit'
     });
 }
 
@@ -93,7 +93,7 @@ function getDaysUntil(date) {
                     <div class="bg-white rounded-2xl border border-gray-200 p-6">
                         <div class="flex items-start justify-between">
                             <div>
-                                <div class="text-gray-500 text-sm font-medium mb-1">Nieuw dit maand</div>
+                                <div class="text-gray-500 text-sm font-medium mb-1">Nieuw deze maand</div>
                                 <div class="text-3xl font-bold text-blue-900">{{ recentStats.newScores }}</div>
                                 <p class="text-gray-500 text-sm mt-1">nieuwe stukken toegevoegd</p>
                             </div>
@@ -183,7 +183,7 @@ function getDaysUntil(date) {
                             <div v-for="part in myParts" :key="part.part_id" class="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div class="font-semibold text-gray-900 text-sm">{{ part.score_title }}</div>
                                 <div class="text-gray-500 text-xs mb-2">{{ part.score_composer }}</div>
-                                <Link 
+                                <Link
                                     :href="route('muziek.download', { score: part.score_id, part: part.part_id })"
                                     class="inline-flex items-center gap-1 bg-yellow-500 text-blue-900 text-xs font-bold px-3 py-1 rounded hover:bg-yellow-400 transition-colors"
                                 >
@@ -195,7 +195,7 @@ function getDaysUntil(date) {
                             </div>
                         </div>
 
-                        <Link 
+                        <Link
                             :href="route('muziek.index')"
                             class="mt-4 w-full block text-center bg-blue-900 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors"
                         >

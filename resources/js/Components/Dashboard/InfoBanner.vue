@@ -8,6 +8,7 @@
         <div class="text-2xl font-bold mt-1">{{ heading }}</div>
         <div class="text-sm mt-2 opacity-80">{{ subtitle }}</div>
       </div>
+      <slot name="action" />
       <slot name="icon" />
     </div>
   </div>

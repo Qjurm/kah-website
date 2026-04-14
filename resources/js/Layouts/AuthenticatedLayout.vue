@@ -133,7 +133,7 @@ const headerClass = computed(() => {
                                         'border-yellow-400': currentMode === 'admin' && route().current('beheer.gebruikers.*')
                                     }"
                                 >
-                                    Beheer gebruikers
+                                    Gebruikers
                                 </NavLink>
                                 <NavLink
                                     v-if="!isAdmin"
