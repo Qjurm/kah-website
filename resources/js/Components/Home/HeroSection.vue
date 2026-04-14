@@ -15,7 +15,7 @@ import { Link } from '@inertiajs/vue3';
                 Koninklijke Almelosche Harmonie
             </h1>
             <p class="text-xl md:text-2xl text-slate-300 mb-8 font-light">
-                Sinds 1904 het vlaggenschip van de Almelose muziekcultuur
+                In Almelo opgericht in 1904
             </p>
             <div class="flex gap-4 justify-center flex-wrap">
                 <Link

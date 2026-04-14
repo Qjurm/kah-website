@@ -122,7 +122,18 @@ const headerClass = computed(() => {
                                         'border-yellow-400': currentMode === 'admin' && route().current('beheer.bladmuziek.*')
                                     }"
                                 >
-                                    Stukken
+                                    Muziek
+                                </NavLink>
+                                <NavLink
+                                    v-if="isAdmin"
+                                    :href="route('beheer.gebruikers.index')"
+                                    :active="route().current('beheer.gebruikers.*')"
+                                    :class="{
+                                        'text-white hover:text-gray-100': currentMode === 'admin',
+                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.gebruikers.*')
+                                    }"
+                                >
+                                    Beheer gebruikers
                                 </NavLink>
                                 <NavLink
                                     v-if="!isAdmin"
