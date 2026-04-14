@@ -46,16 +46,6 @@ const toggleLink = computed(() => {
     return null;
 });
 
-const toggleButtonText = computed(() => {
-    if (currentMode.value === 'admin') {
-        return 'Terug naar Muziek';
-    }
-    if (currentMode.value === 'musician') {
-        return 'Admin Panel';
-    }
-    return null;
-});
-
 const headerClass = computed(() => {
     if (currentMode.value === 'admin') {
         return 'bg-blue-900 border-b-4 border-yellow-400';
@@ -88,78 +78,67 @@ const headerClass = computed(() => {
                             </div>
 
                             <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
-                                <NavLink
-                                    v-if="isAdmin"
-                                    :href="route('beheer.dashboard')"
-                                    :active="route().current('beheer.dashboard')"
-                                    :class="{
-                                        'text-white hover:text-gray-100': currentMode === 'admin',
-                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.dashboard')
-                                    }"
-                                >
-                                    Dashboard
-                                </NavLink>
-                                <NavLink
-                                    v-if="isAdmin"
-                                    :href="route('beheer.concerten.index')"
-                                    :active="route().current('beheer.concerten.*')"
-                                    :class="{
-                                        'text-white hover:text-gray-100': currentMode === 'admin',
-                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.concerten.*')
-                                    }"
-                                >
-                                    Concerten
-                                </NavLink>
-                                <NavLink
-                                    v-if="isAdmin"
-                                    :href="route('beheer.bladmuziek.index')"
-                                    :active="route().current('beheer.bladmuziek.*')"
-                                    :class="{
-                                        'text-white hover:text-gray-100': currentMode === 'admin',
-                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.bladmuziek.*')
-                                    }"
-                                >
-                                    Muziek
-                                </NavLink>
-                                <NavLink
-                                    v-if="isAdmin"
-                                    :href="route('beheer.gebruikers.index')"
-                                    :active="route().current('beheer.gebruikers.*')"
-                                    :class="{
-                                        'text-white hover:text-gray-100': currentMode === 'admin',
-                                        'border-yellow-400': currentMode === 'admin' && route().current('beheer.gebruikers.*')
-                                    }"
-                                >
-                                    Gebruikers
-                                </NavLink>
-                                <NavLink
-                                    v-if="!isAdmin"
-                                    :href="route('muziek.index')"
-                                    :active="route().current('muziek.index')"
-                                >
-                                    Muziek
-                                </NavLink>
-                            </div>
+                                <div  v-if="isAdmin" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                    <NavLink
+                                        :href="route('beheer.dashboard')"
+                                        :active="route().current('beheer.dashboard')"
+                                        :class="{
+                                            'text-white hover:text-gray-100': currentMode === 'admin',
+                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.dashboard')
+                                        }"
+                                    >
+                                        Dashboard
+                                    </NavLink>
+                                    <NavLink
+                                        :href="route('beheer.concerten.index')"
+                                        :active="route().current('beheer.concerten.*')"
+                                        :class="{
+                                            'text-white hover:text-gray-100': currentMode === 'admin',
+                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.concerten.*')
+                                        }"
+                                    >
+                                        Concerten
+                                    </NavLink>
+                                    <NavLink
+                                        :href="route('beheer.bladmuziek.index')"
+                                        :active="route().current('beheer.bladmuziek.*')"
+                                        :class="{
+                                            'text-white hover:text-gray-100': currentMode === 'admin',
+                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.bladmuziek.*')
+                                        }"
+                                    >
+                                        Muziek
+                                    </NavLink>
+                                    <NavLink
+                                        :href="route('beheer.gebruikers.index')"
+                                        :active="route().current('beheer.gebruikers.*')"
+                                        :class="{
+                                            'text-white hover:text-gray-100': currentMode === 'admin',
+                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.gebruikers.*')
+                                        }"
+                                    >
+                                        Gebruikers
+                                    </NavLink>
+
+                                    <div class=" bg-white w-1" />
+
+                                </div>
+                                <div class="space-x-8 w-full pl-4 pr-4 sm:-my-px sm:ms-10 sm:flex">
+                                    <NavLink
+                                        :href="route('muziek.index')"
+                                        :active="route().current('muziek.index')"
+                                        class="text-white"
+                                    >
+                                        Muziek
+                                    </NavLink>
+                                </div>
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center sm:gap-4">
-                            <!-- Mode Toggle Button (for dual-role users) -->
-                            <Link
-                                v-if="isAdminAndMusician && toggleLink"
-                                :href="toggleLink"
-                                as="button"
-                                class="inline-flex items-center rounded-md bg-yellow-400 px-4 py-2 text-sm font-semibold text-gray-900 transition duration-150 ease-in-out hover:bg-yellow-300 focus:outline-none"
-                            >
-                                {{ toggleButtonText }}
-                            </Link>
-
                             <!-- Mode Indicator Badge (Admin Mode) -->
                             <span
-                                v-if="currentMode === 'admin'"
-                                class="inline-block rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold uppercase tracking-wide text-gray-900"
+                                v-if="isAdmin"
+                                class="inline-block rounded-full bg-yellow-400 px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-900"
                             >
                                 ADMIN
                             </span>
