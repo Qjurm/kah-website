@@ -40,12 +40,13 @@ Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(f
     Route::get('bladmuziek/{score}/partijen/{part}/download', [ScoreController::class, 'download'])->name('bladmuziek.partijen.download');
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class)->parameters(['concerten' => 'concert']);
+    Route::resource('instrumenten', InstrumentController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['instrumenten' => 'instrument']);
     Route::resource('gebruikers', UserController::class)->parameters(['gebruikers' => 'user']);
     Route::put('gebruikers/{user}/approve', [UserController::class, 'approve'])->name('gebruikers.approve');
     Route::delete('gebruikers/{user}', [UserController::class, 'destroy'])->name('gebruikers.destroy');
     
-    // API endpoint for inline instrument creation
-    Route::post('/api/instruments', [InstrumentController::class, 'store'])->name('api.instruments.store');
+    // API endpoint for inline instrument creation (Score creation page)
+    Route::post('/api/instruments', [InstrumentController::class, 'storeApi'])->name('api.instruments.store');
 });
 
 // Redirect route for dual-role users returning from musician mode to admin

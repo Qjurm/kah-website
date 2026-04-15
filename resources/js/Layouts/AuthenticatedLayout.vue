@@ -35,10 +35,11 @@ const adminLinks = computed(() => {
     const t = (key) => translations[key] || key;
 
     return [
-        { label: t('Dashboard'),  routeName: 'beheer.dashboard',        active: route().current('beheer.dashboard') },
-        { label: t('Concerten'),  routeName: 'beheer.concerten.index',  active: route().current('beheer.concerten.*') },
-        { label: t('Stukken'),    routeName: 'beheer.bladmuziek.index', active: route().current('beheer.bladmuziek.*') },
-        { label: t('Gebruikers'), routeName: 'beheer.gebruikers.index', active: route().current('beheer.gebruikers.*') },
+        { label: t('Dashboard'),    routeName: 'beheer.dashboard',        active: route().current('beheer.dashboard') },
+        { label: t('Concerten'),    routeName: 'beheer.concerten.index',  active: route().current('beheer.concerten.*') },
+        { label: t('Bladmuziek'),   routeName: 'beheer.bladmuziek.index', active: route().current('beheer.bladmuziek.*') },
+        { label: t('Gebruikers'),   routeName: 'beheer.gebruikers.index',  active: route().current('beheer.gebruikers.*') },
+        { label: t('Instrumenten'), routeName: 'beheer.instrumenten.index', active: route().current('beheer.instrumenten.*') },
     ];
 });
 
