@@ -17,11 +17,11 @@ class MusicController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $scores = Score::with(['parts.instrument'])->orderBy('number')->get();
+        $scores = Score::with(['parts.instrument'])->orderBy('title')->get();
 
         $currentConcert = Concert::where('is_current', true)
             ->with(['scores' => function ($query) {
-                $query->orderBy('number')->with('parts.instrument');
+                $query->orderBy('title')->with('parts.instrument');
             }])
             ->first();
 
