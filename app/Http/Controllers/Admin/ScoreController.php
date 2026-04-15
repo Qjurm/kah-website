@@ -40,7 +40,7 @@ class ScoreController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'title'              => 'required|string|max:255',
@@ -142,7 +142,7 @@ class ScoreController extends Controller
         return Inertia::render('Admin/Scores/Edit', $data);
     }
 
-    public function update(Request $request, $id): RedirectResponse
+    public function update(Request $request, $id)
     {
         $score = Score::findOrFail($id);
         
