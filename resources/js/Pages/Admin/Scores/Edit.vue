@@ -1,3 +1,4 @@
+<script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import axios from 'axios';
