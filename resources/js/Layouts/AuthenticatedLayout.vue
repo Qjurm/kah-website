@@ -30,12 +30,17 @@ const musicianLinks = computed(() => {
     ];
 });
 
-const adminLinks = computed(() => [
-    { label: 'Dashboard',  routeName: 'beheer.dashboard',        active: route().current('beheer.dashboard') },
-    { label: 'Concerten',  routeName: 'beheer.concerten.index',  active: route().current('beheer.concerten.*') },
-    { label: 'Stukken',    routeName: 'beheer.bladmuziek.index', active: route().current('beheer.bladmuziek.*') },
-    { label: 'Gebruikers', routeName: 'beheer.gebruikers.index', active: route().current('beheer.gebruikers.*') },
-]);
+const adminLinks = computed(() => {
+    const translations = page.props.translations || {};
+    const t = (key) => translations[key] || key;
+
+    return [
+        { label: t('Dashboard'),  routeName: 'beheer.dashboard',        active: route().current('beheer.dashboard') },
+        { label: t('Concerten'),  routeName: 'beheer.concerten.index',  active: route().current('beheer.concerten.*') },
+        { label: t('Stukken'),    routeName: 'beheer.bladmuziek.index', active: route().current('beheer.bladmuziek.*') },
+        { label: t('Gebruikers'), routeName: 'beheer.gebruikers.index', active: route().current('beheer.gebruikers.*') },
+    ];
+});
 
 const activeAdminIndex = computed(() => adminLinks.value.findIndex(l => l.active));
 </script>

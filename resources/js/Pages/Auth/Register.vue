@@ -2,10 +2,6 @@
 import { ref } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import MultiSelect from '@/Components/MultiSelect.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -21,8 +17,6 @@ const form = useForm({
     primary_instrument: null,
 });
 
-const isOpen = ref(false);
-
 const submit = () => {
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
@@ -34,42 +28,41 @@ const submit = () => {
     <GuestLayout>
         <Head title="Registreren" />
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="name" value="Naam" />
+        <div class="text-left mb-10">
+            <h1 class="text-4xl font-black text-blue-950 italic leading-tight">Word Lid</h1>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Meld je aan bij de vereniging</p>
+        </div>
 
-                <TextInput
-                    id="name"
-                    type="text"
-                    class="mt-1 block w-full"
+        <form @submit.prevent="submit" class="space-y-6">
+            <div class="text-left">
+                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Volledige Naam</label>
+                <input
                     v-model="form.name"
+                    type="text"
+                    class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all placeholder:text-gray-300"
+                    placeholder="Bijv. Jan de Boer"
                     required
                     autofocus
-                    autocomplete="name"
                 />
-
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="email" value="E-mailadres" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
+            <div class="text-left">
+                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">E-mailadres</label>
+                <input
                     v-model="form.email"
+                    type="email"
+                    class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all placeholder:text-gray-300"
+                    placeholder="jouw@email.nl"
                     required
-                    autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <!-- Instrument Selection -->
-            <div class="mt-8">
+            <div class="text-left pt-2">
                 <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4 ml-1">Kies je instrument(en)</label>
-                <div class="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 scrollbar-thin">
+                <div class="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 pr-2 scrollbar-thin">
                     <div 
                         v-for="instrument in instruments" 
                         :key="instrument.id"
@@ -84,7 +77,7 @@ const submit = () => {
                         }"
                         class="p-4 rounded-xl border-2 transition-all cursor-pointer text-left active:scale-95"
                         :class="form.instruments.includes(instrument.id)
-                            ? 'bg-blue-950 border-blue-950 text-white'
+                            ? 'bg-blue-950 border-blue-950 text-white shadow-lg shadow-blue-900/10'
                             : 'bg-white border-gray-100 hover:border-blue-100 text-blue-950'"
                     >
                         <div class="flex items-center justify-between mb-2">
@@ -101,63 +94,51 @@ const submit = () => {
                                 Maak primair
                             </button>
                         </div>
-                        <div class="text-[10px] font-black uppercase tracking-widest truncate">{{ instrument.name }}</div>
+                        <div class="text-[10px] font-black uppercase tracking-widest truncate leading-tight">{{ instrument.name }}</div>
                     </div>
                 </div>
                 <InputError class="mt-2" :message="form.errors.instruments" />
             </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Wachtwoord" />
-
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="text-left">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Wachtwoord</label>
+                    <input
+                        v-model="form.password"
+                        type="password"
+                        class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"
+                        required
+                    />
+                </div>
+                <div class="text-left">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Bevestig</label>
+                    <input
+                        v-model="form.password_confirmation"
+                        type="password"
+                        class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"
+                        required
+                    />
+                </div>
             </div>
+            <InputError class="mt-2" :message="form.errors.password" />
 
-            <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Bevestig wachtwoord"
-                />
-
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
-
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Heb je al een account?
-                </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
+            <div class="pt-6">
+                <button
+                    type="submit"
+                    class="w-full bg-blue-950 text-white py-6 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-blue-900/20 active:scale-95 disabled:opacity-50"
                     :disabled="form.processing"
                 >
-                    Registreren
-                </PrimaryButton>
+                    {{ form.processing ? 'Bezig...' : 'Lid Worden &rarr;' }}
+                </button>
+            </div>
+
+            <div class="pt-4 text-center">
+                <Link
+                    :href="route('login')"
+                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-950 transition-colors"
+                >
+                    Heb je al een account? Log in
+                </Link>
             </div>
         </form>
     </GuestLayout>
