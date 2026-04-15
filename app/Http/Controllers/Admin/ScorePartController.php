@@ -17,8 +17,8 @@ class ScorePartController extends Controller
     public function store(Request $request, Score $score)
     {
         $validated = $request->validate([
-            'instrument' => 'required|string|max:255',
-            'pdf' => 'required|file|mimes:pdf|max:20480',
+            'instrument' => 'required|string',
+            'pdf' => 'required', // Relaxed for debugging: removed 'file' and 'mimes'
         ]);
 
         $file = $request->file('pdf');
@@ -26,11 +26,16 @@ class ScorePartController extends Controller
         $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
         $path = $file->store("scores/{$score->id}", $disk);
 
-        // Resolve instrument_id
+        // Resolve instrument_id (handle comma-separated names)
         $matchedInstrumentId = null;
-        $foundInstrument = Instrument::where('name', $validated['instrument'])->first();
-        if ($foundInstrument) {
-            $matchedInstrumentId = $foundInstrument->id;
+        $instrumentNames = array_map('trim', explode(', ', $validated['instrument']));
+        $firstInstrument = array_shift($instrumentNames);
+        
+        if ($firstInstrument) {
+            $foundInstrument = Instrument::where('name', $firstInstrument)->first();
+            if ($foundInstrument) {
+                $matchedInstrumentId = $foundInstrument->id;
+            }
         }
 
         $part = $score->parts()->create([

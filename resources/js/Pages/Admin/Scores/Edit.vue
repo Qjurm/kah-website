@@ -65,6 +65,7 @@ async function submit() {
     if (isUploading.value) return;
     
     isUploading.value = true;
+    form.clearErrors();
     
     try {
         // Step 1: Update metadata & handle removals
@@ -85,22 +86,20 @@ async function submit() {
             
             try {
                 const formData = new FormData();
-                formData.append('instrument', part.instrument);
-                formData.append('pdf', part.pdf);
+                formData.set('instrument', String(part.instrument));
+                formData.set('pdf', part.pdf, part.filename);
                 
-                await axios.post(route('beheer.bladmuziek.partijen.store', props.score.id), formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                await axios.post(route('beheer.bladmuziek.partijen.store', props.score.id), formData);
                 
                 part.status = 'success';
                 part.statusMessage = 'Opgeslagen';
             } catch (err) {
                 part.status = 'error';
                 let msg = 'Upload mislukt';
-                if (err.response?.data?.message) {
+                if (err.response?.data?.errors) {
+                    msg = Object.values(err.response.data.errors).flat().join(', ');
+                } else if (err.response?.data?.message) {
                     msg = err.response.data.message;
-                } else if (err.message) {
-                    msg = err.message;
                 }
                 part.statusMessage = msg;
             }
@@ -112,7 +111,14 @@ async function submit() {
         }
     } catch (err) {
         console.error("Fout bij bijwerken muziekstuk:", err);
-        alert("Fout bij opslaan basisgegevens. Controleer de velden.");
+        if (err.response?.status === 422 && err.response.data.errors) {
+            const errors = err.response.data.errors;
+            Object.keys(errors).forEach(key => {
+                form.setError(key, errors[key][0]);
+            });
+        } else {
+            alert("Er is een onverwachte fout opgetreden bij het opslaan van de basisgegevens.");
+        }
     } finally {
         isUploading.value = false;
     }

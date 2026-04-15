@@ -104,19 +104,31 @@ function processFiles(files) {
 
         const nameWithoutExt = file.name.replace(/\.pdf$/i, '');
         let inferredTitle = nameWithoutExt;
+        let inferredComposer = '';
         let inferredInstrumentStr = '';
 
-        const underscoreIndex = nameWithoutExt.lastIndexOf('_');
-        const dashIndex = nameWithoutExt.lastIndexOf(' - ');
-
-        if (underscoreIndex !== -1) {
-            inferredTitle = nameWithoutExt.substring(0, underscoreIndex).trim();
-            inferredInstrumentStr = nameWithoutExt.substring(underscoreIndex + 1).trim();
-        } else if (dashIndex !== -1) {
-            inferredTitle = nameWithoutExt.substring(0, dashIndex).trim();
-            inferredInstrumentStr = nameWithoutExt.substring(dashIndex + 3).trim();
+        // Improved Regex for "Composer - Title_Instrument" or "Composer - Title - Instrument"
+        // Also supports "Composer_Title_Instrument"
+        const dashParts = nameWithoutExt.split(/ - | _ /);
+        const underscoreParts = nameWithoutExt.split('_');
+        
+        if (dashParts.length >= 2) {
+            inferredComposer = dashParts[0].trim();
+            inferredTitle = dashParts[1].trim();
+            if (dashParts.length >= 3) {
+                inferredInstrumentStr = dashParts[dashParts.length - 1].trim();
+            } else {
+                inferredInstrumentStr = inferredTitle;
+            }
+        } else if (underscoreParts.length >= 2) {
+            inferredComposer = underscoreParts[0].trim();
+            inferredTitle = underscoreParts[1].trim();
+            if (underscoreParts.length >= 3) {
+                inferredInstrumentStr = underscoreParts[underscoreParts.length - 1].trim();
+            } else {
+                inferredInstrumentStr = inferredTitle;
+            }
         } else {
-            // No separator found -> Entire filename serves as the 'possible' alias match String
             inferredTitle = nameWithoutExt.trim();
             inferredInstrumentStr = nameWithoutExt.trim();
         }
@@ -124,46 +136,24 @@ function processFiles(files) {
         let matchedInstrument = '';
         if (inferredInstrumentStr) {
             const lowerInferred = inferredInstrumentStr.toLowerCase();
-            const strippedInferred = lowerInferred.replace(/\s*\d+$/, ''); // strip numbers for alias check
+            const strippedInferred = lowerInferred.replace(/\s*\d+$/, '');
             
             if (strippedInferred.trim() !== '') {
-                // Exact Match
                 let match = instrumentsList.value.find(i => i.name.toLowerCase() === lowerInferred);
-                
-                // "percussie 1" maps to "percussie" (Inferred str includes the DB instrument name)
-                if (!match) {
-                    match = instrumentsList.value.find(i => lowerInferred.includes(i.name.toLowerCase()));
-                }
-                
-                // Reverse Include matching -> "alt" maps to "saxofoon alt"
-                if (!match) {
-                    match = instrumentsList.value.find(i => i.name.toLowerCase().includes(lowerInferred));
-                }
-
-                // Alias mapping. Also checks for inclusions if the alias is 4+ chars, else uses word boundaries to prevent bugs like "cl" matching "clef". 
+                if (!match) match = instrumentsList.value.find(i => lowerInferred.includes(i.name.toLowerCase()));
+                if (!match) match = instrumentsList.value.find(i => i.name.toLowerCase().includes(lowerInferred));
                 if (!match) {
                     match = instrumentsList.value.find(i => 
                         i.aliases && i.aliases.some(alias => {
                             const lowerAlias = alias.toLowerCase();
                             if (strippedInferred === lowerAlias) return true;
-                            
-                            // Prevent "cl" matching inside "clef"
-                            if (lowerAlias.length > 3 && strippedInferred.includes(lowerAlias)) return true;
-                            if (lowerAlias.length > 3 && lowerAlias.includes(strippedInferred)) return true;
-                            
-                            // Word boundary check for short aliases
+                            if (lowerAlias.length > 3 && (strippedInferred.includes(lowerAlias) || lowerAlias.includes(strippedInferred))) return true;
                             const regex = new RegExp(`\\b${lowerAlias}\\b`, 'i');
                             return regex.test(strippedInferred);
                         })
                     );
                 }
-                
-                // STRICT DB assignment
-                if (match) {
-                    matchedInstrument = match.name;
-                } else {
-                    matchedInstrument = ''; // Force user to use dropdown or add custom
-                }
+                if (match) matchedInstrument = match.name;
             }
         }
 
@@ -177,9 +167,9 @@ function processFiles(files) {
             statusMessage: '',
         });
         
-        if (!form.title && inferredTitle) {
-            form.title = inferredTitle;
-        }
+        // Auto-fill metadata if empty
+        if (!form.title && inferredTitle) form.title = inferredTitle;
+        if (!form.composer && inferredComposer) form.composer = inferredComposer;
     });
 }
 
@@ -220,6 +210,7 @@ async function submit() {
     if (isUploading.value) return;
     
     isUploading.value = true;
+    form.clearErrors(); // Clear existing errors
     
     try {
         // Step 1: Create Score Meta first
@@ -241,22 +232,20 @@ async function submit() {
             
             try {
                 const formData = new FormData();
-                formData.append('instrument', part.instrument);
-                formData.append('pdf', part.file);
+                formData.set('instrument', String(part.instrument));
+                formData.set('pdf', part.pdf, part.filename);
                 
-                await axios.post(route('beheer.bladmuziek.partijen.store', currentScoreId.value), formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                await axios.post(route('beheer.bladmuziek.partijen.store', currentScoreId.value), formData);
                 
                 part.status = 'success';
                 part.statusMessage = 'Opgeslagen';
             } catch (err) {
                 part.status = 'error';
                 let msg = 'Upload mislukt';
-                if (err.response?.data?.message) {
+                if (err.response?.data?.errors) {
+                    msg = Object.values(err.response.data.errors).flat().join(', ');
+                } else if (err.response?.data?.message) {
                     msg = err.response.data.message;
-                } else if (err.message) {
-                    msg = err.message;
                 }
                 part.statusMessage = msg;
             }
@@ -268,7 +257,15 @@ async function submit() {
         }
     } catch (err) {
         console.error("Fout bij aanmaken muziekstuk:", err);
-        alert("Fout: Kon het muziekstuk niet aanmaken. Controleer de verplichte velden.");
+        // Map Axios validation errors back to the Inertia form
+        if (err.response?.status === 422 && err.response.data.errors) {
+            const errors = err.response.data.errors;
+            Object.keys(errors).forEach(key => {
+                form.setError(key, errors[key][0]);
+            });
+        } else {
+            alert("Er is een onverwachte fout opgetreden. Controleer of alle verplichte velden (Titel, Componist) zijn ingevuld.");
+        }
     } finally {
         isUploading.value = false;
     }

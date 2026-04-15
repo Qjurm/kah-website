@@ -41,8 +41,13 @@ function handleSearchUpdate(val) {
 }
 
 function selectInstrument(name) {
-    emit('update:modelValue', name);
-    open.value = false;
+    let currentArr = props.modelValue ? props.modelValue.split(', ') : [];
+    if (currentArr.includes(name)) {
+        currentArr = currentArr.filter(i => i !== name);
+    } else {
+        currentArr.push(name);
+    }
+    emit('update:modelValue', currentArr.join(', '));
 }
 
 function addNewInstrument() {
@@ -106,15 +111,16 @@ function addNewInstrument() {
                                 <svg class="ml-2 h-4 w-4 shrink-0 opacity-50" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
                             </button>
                         </PopoverTrigger>
-                        <PopoverContent class="w-[300px] p-0 rounded-2xl shadow-2xl border-none overflow-hidden" align="start">
-                            <Command v-model:searchTerm="searchQuery">
-                                <CommandInput placeholder="Zoek instrument..." @update:modelValue="handleSearchUpdate" class="border-none focus:ring-0 font-bold" />
-                                <CommandList class="max-h-[300px]">
+                        <PopoverContent class="w-[300px] p-0 rounded-2xl shadow-2xl border border-gray-100 overflow-hidden bg-white" align="start">
+                            <Command :searchTerm="searchQuery" class="border-none flex flex-col h-full overflow-hidden">
+                                <CommandInput placeholder="Zoek instrument..." @update:modelValue="handleSearchUpdate" class="border-b border-gray-100 focus:ring-0 font-bold h-12" />
+                                <CommandList class="max-h-[260px] overflow-y-auto">
                                     <CommandEmpty>
                                         <div class="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                            Geen instrument gevonden.
+                                            Geen instrument gevonden in lijst.
                                         </div>
                                     </CommandEmpty>
+                                    
                                     <CommandGroup>
                                         <CommandItem
                                             v-for="inst in instruments"
@@ -124,27 +130,30 @@ function addNewInstrument() {
                                             class="flex items-center px-4 py-3 cursor-pointer hover:bg-blue-50 transition-colors font-bold text-blue-950"
                                         >
                                             <div class="w-5 h-5 rounded-md border border-gray-200 mr-3 flex items-center justify-center transition-all"
-                                                :class="{ 'bg-yellow-400 border-yellow-400': modelValue === inst.name }">
-                                                <svg v-if="modelValue === inst.name" class="w-3 h-3 text-blue-950" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                                :class="{ 'bg-yellow-400 border-yellow-400': modelValue && modelValue.split(', ').includes(inst.name) }">
+                                                <svg v-if="modelValue && modelValue.split(', ').includes(inst.name)" class="w-3 h-3 text-blue-950" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                                             </div>
                                             {{ inst.name }}
                                         </CommandItem>
                                     </CommandGroup>
-
-                                    <CommandGroup v-if="searchQuery && !instruments.some(i => i.name.toLowerCase() === searchQuery.toLowerCase())">
-                                        <CommandSeparator />
-                                        <CommandItem
-                                            :value="searchQuery"
-                                            @select="addNewInstrument"
-                                            class="flex items-center px-4 py-4 cursor-pointer text-blue-600 hover:bg-blue-50 transition-colors font-black uppercase tracking-widest text-[10px]"
-                                        >
-                                            <div class="w-5 h-5 rounded-md bg-blue-100 flex items-center justify-center mr-3">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                                            </div>
-                                            "{{ searchQuery }}" Toevoegen
-                                        </CommandItem>
-                                    </CommandGroup>
                                 </CommandList>
+                                
+                                <!-- Persistent Add Option (Outside list to avoid cmkd filtering) -->
+                                <div v-if="searchQuery" class="border-t border-gray-100 bg-white p-1">
+                                    <button
+                                        type="button"
+                                        @click="addNewInstrument"
+                                        class="w-full flex items-center px-4 py-4 rounded-xl text-blue-600 hover:bg-blue-50 transition-colors font-black uppercase tracking-widest text-[11px]"
+                                    >
+                                        <div class="w-6 h-6 rounded-lg bg-blue-100 flex items-center justify-center mr-3 shadow-sm shadow-blue-200 text-blue-600">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                        </div>
+                                        "{{ searchQuery }}" Toevoegen
+                                    </button>
+                                </div>
+                                <div v-else class="p-4 border-t border-gray-50 bg-gray-50/30">
+                                    <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-300 text-center">Type voor een nieuw instrument...</p>
+                                </div>
                             </Command>
                         </PopoverContent>
                     </Popover>
