@@ -26,12 +26,11 @@ class ConcertController extends Controller
 
     public function create(): Response
     {
-        $scores = Score::orderBy('number')->get();
+        $scores = Score::orderBy('title')->get();
 
         return Inertia::render('Admin/Concerts/Create', [
             'scores' => $scores->map(fn ($s) => [
                 'id'       => $s->id,
-                'number'   => $s->number,
                 'title'    => $s->title,
                 'composer' => $s->composer,
             ])->toArray(),
@@ -79,7 +78,7 @@ class ConcertController extends Controller
         $concert = Concert::findOrFail($id);
         
         $concert->load('scores');
-        $scores = Score::orderBy('number')->get();
+        $scores = Score::orderBy('title')->get();
 
         $data = [
             'concert' => [
@@ -94,14 +93,12 @@ class ConcertController extends Controller
                 'updated_at' => $concert->updated_at,
                 'scores'     => $concert->scores->map(fn ($s) => [
                     'id'       => $s->id,
-                    'number'   => $s->number,
                     'title'    => $s->title,
                     'composer' => $s->composer,
                 ])->toArray(),
             ],
             'allScores' => $scores->map(fn ($s) => [
                 'id'       => $s->id,
-                'number'   => $s->number,
                 'title'    => $s->title,
                 'composer' => $s->composer,
             ])->toArray(),

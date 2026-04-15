@@ -10,7 +10,6 @@ class ScoreResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'number' => $this->number,
             'title' => $this->title,
             'composer' => $this->composer,
             'arranger' => $this->arranger,
