@@ -1,12 +1,15 @@
-<script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ScorePartItem from '@/Components/ScorePartItem.vue';
 
 const props = defineProps({
     score: Object,
     instruments: Array,
 });
+
+const instrumentsList = ref([...props.instruments]);
 
 const form = useForm({
     title: props.score.title,
@@ -17,6 +20,8 @@ const form = useForm({
 });
 
 const fileInput = ref(null);
+const isUploading = ref(false);
+const currentScoreId = ref(props.score.id);
 
 function handleFileUpload(e) {
     const files = Array.from(e.target.files);
@@ -33,17 +38,83 @@ function handleFileUpload(e) {
 
         form.new_parts.push({
             pdf: file,
-            fileName: file.name,
-            instrument: suggestedInstrument,
+            filename: file.name,
+            inferredTitle: suggestedInstrument,
             original_parsed_instrument: suggestedInstrument,
+            instrument: suggestedInstrument,
+            status: 'pending',
+            statusMessage: '',
         });
     });
 }
 
-function submit() {
-    form.post(route('beheer.bladmuziek.update_multipart', props.score.id), {
-        forceFormData: true,
-    });
+async function onAddInstrument(newName) {
+    if (instrumentsList.value.find(i => i.name.toLowerCase() === newName.toLowerCase())) return;
+
+    try {
+        const response = await axios.post(route('beheer.api.instruments.store'), { name: newName });
+        instrumentsList.value.push(response.data);
+    } catch (error) {
+        console.error("Fout bij toevoegen instrument:", error);
+        instrumentsList.value.push({ id: 'new_' + Date.now(), name: newName });
+    }
+}
+
+async function submit() {
+    if (isUploading.value) return;
+    
+    isUploading.value = true;
+    
+    try {
+        // Step 1: Update metadata & handle removals
+        await axios.put(route('beheer.bladmuziek.update', props.score.id), {
+            title: form.title,
+            composer: form.composer,
+            arranger: form.arranger,
+            removed_part_ids: form.removed_part_ids,
+        });
+        
+        // Step 2: Sequential Uploads for new parts
+        for (let i = 0; i < form.new_parts.length; i++) {
+            const part = form.new_parts[i];
+            if (part.status === 'success') continue;
+            
+            part.status = 'uploading';
+            part.statusMessage = 'Bezig met uploaden...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('instrument', part.instrument);
+                formData.append('pdf', part.pdf);
+                
+                await axios.post(route('beheer.bladmuziek.partijen.store', props.score.id), formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
+                part.status = 'success';
+                part.statusMessage = 'Opgeslagen';
+            } catch (err) {
+                part.status = 'error';
+                let msg = 'Upload mislukt';
+                if (err.response?.data?.message) {
+                    msg = err.response.data.message;
+                } else if (err.message) {
+                    msg = err.message;
+                }
+                part.statusMessage = msg;
+            }
+        }
+        
+        const anyFailed = form.new_parts.some(p => p.status === 'error');
+        if (!anyFailed) {
+            router.visit(route('beheer.bladmuziek.index'));
+        }
+    } catch (err) {
+        console.error("Fout bij bijwerken muziekstuk:", err);
+        alert("Fout bij opslaan basisgegevens. Controleer de velden.");
+    } finally {
+        isUploading.value = false;
+    }
 }
 
 function toggleRemovePart(partId) {
@@ -129,32 +200,36 @@ function toggleRemovePart(partId) {
                                 </div>
                             </div>
 
-                            <div v-if="form.new_parts.length > 0" class="space-y-4 mb-8 relative z-10 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
-                                <div v-for="(part, index) in form.new_parts" :key="index" class="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/5">
-                                    <div class="w-10 h-10 rounded-xl bg-yellow-400 text-blue-950 flex items-center justify-center font-black text-[10px] shrink-0">
-                                        NEW
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-[11px] font-black truncate">{{ part.fileName }}</div>
-                                        <select v-model="part.instrument" class="mt-1 w-full bg-blue-900 border-none rounded-xl px-4 py-2 text-[10px] font-black focus:ring-1 focus:ring-yellow-400">
-                                            <option value="" disabled>Kies instrument...</option>
-                                            <option v-for="inst in instruments" :key="inst.id" :value="inst.name" class="bg-blue-950">{{ inst.name }}</option>
-                                        </select>
-                                    </div>
-                                    <button @click.prevent="form.new_parts.splice(index, 1)" class="text-white/20 hover:text-red-400 transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
-                                </div>
+                            <div v-if="form.new_parts.length > 0" class="space-y-4 mb-8 relative z-10 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
+                                <ScorePartItem 
+                                    v-for="(part, index) in form.new_parts" 
+                                    :key="index"
+                                    :part="part"
+                                    :index="index"
+                                    :instruments="instrumentsList"
+                                    :modelValue="part.instrument"
+                                    :status="part.status"
+                                    :statusMessage="part.statusMessage"
+                                    @update:modelValue="val => { part.instrument = val; }"
+                                    :errorInstrument="form.errors[`new_parts.${index}.instrument`]"
+                                    :errorPdf="form.errors[`new_parts.${index}.pdf`]"
+                                    @remove="form.new_parts.splice(index, 1)"
+                                    @add-instrument="onAddInstrument"
+                                />
                             </div>
 
                             <div class="flex justify-end relative z-10">
-                                <button 
-                                    @click="submit"
-                                    :disabled="form.processing || (form.new_parts.length === 0 && form.removed_part_ids.length === 0)"
-                                    class="bg-yellow-400 text-blue-950 px-10 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-yellow-300 transition-all active:scale-95 shadow-xl shadow-yellow-400/20 disabled:opacity-50"
-                                >
-                                    {{ form.processing ? __('Opslaan...') : __('Wijzigingen Bevestigen') }}
-                                </button>
+                                    <button 
+                                        @click="submit"
+                                        :disabled="isUploading || (form.new_parts.length === 0 && form.removed_part_ids.length === 0 && !form.isDirty)"
+                                        class="bg-yellow-400 text-blue-950 px-10 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-yellow-300 transition-all active:scale-95 shadow-xl shadow-yellow-400/20 disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        <svg v-if="isUploading" class="animate-spin h-4 w-4 text-blue-950" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        {{ isUploading ? 'Laden...' : 'Wijzigingen Bevestigen' }}
+                                    </button>
                             </div>
                         </div>
 

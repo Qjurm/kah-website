@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ScoreResource;
 use App\Http\Resources\InstrumentResource;
 use App\Models\Instrument;
+use App\Models\InstrumentAlias;
 use App\Models\Score;
 use App\Models\ScorePart;
 use Illuminate\Http\RedirectResponse;
@@ -63,7 +64,7 @@ class ScoreController extends Controller
             $pdfFile = $request->file("parts.{$i}.pdf");
             $path = null;
             if ($pdfFile) {
-                $path = $pdfFile->store("scores/{$score->id}", config('filesystems.scores.driver') === 'local' ? 'public' : 'scores');
+                $path = $pdfFile->store("scores/{$score->id}", config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores');
             }
 
             $matchedInstrumentId = null;
@@ -79,7 +80,7 @@ class ScoreController extends Controller
 
                 if (!empty($parsedName) && $chosenName !== $parsedName) {
                     if ($foundInstrument) {
-                        \App\Models\InstrumentAlias::updateOrCreate([
+                        InstrumentAlias::updateOrCreate([
                             'alias' => $parsedName
                         ], [
                             'instrument_id' => $foundInstrument->id
@@ -93,6 +94,13 @@ class ScoreController extends Controller
                 'instrument'      => $part['instrument'],
                 'instrument_id'   => $matchedInstrumentId,
                 'pdf_path'        => $path,
+            ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'score'   => $score
             ]);
         }
 
@@ -162,7 +170,7 @@ class ScoreController extends Controller
             $partsToDelete = ScorePart::whereIn('id', $validated['removed_part_ids'])
                 ->where('score_id', $score->id)
                 ->get();
-            $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
+            $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
             foreach ($partsToDelete as $part) {
                 Storage::disk($disk)->delete($part->pdf_path);
                 $part->delete();
@@ -173,7 +181,7 @@ class ScoreController extends Controller
             $pdfFile = $request->file("new_parts.{$i}.pdf");
             $path = null;
             if ($pdfFile) {
-                $path = $pdfFile->store("scores/{$score->id}", config('filesystems.scores.driver') === 'local' ? 'public' : 'scores');
+                $path = $pdfFile->store("scores/{$score->id}", config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores');
             }
 
             $matchedInstrumentId = null;
@@ -190,7 +198,7 @@ class ScoreController extends Controller
                 if (!empty($parsedName) && $chosenName !== $parsedName) {
                     $foundInstrument = \App\Models\Instrument::where('name', $part['instrument'])->first();
                     if ($foundInstrument) {
-                        \App\Models\InstrumentAlias::updateOrCreate([
+                        InstrumentAlias::updateOrCreate([
                             'alias' => $parsedName
                         ], [
                             'instrument_id' => $foundInstrument->id
@@ -212,7 +220,7 @@ class ScoreController extends Controller
     public function destroy(Score $score): RedirectResponse
     {
         $score->load('parts');
-        $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
+        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
         foreach ($score->parts as $part) {
             Storage::disk($disk)->delete($part->pdf_path);
         }
@@ -225,12 +233,13 @@ class ScoreController extends Controller
     {
         abort_if($part->score_id !== $score->id, 404);
 
-        $filename = $score->title . ' - ' . ($part->instrument?->name ?? $part->instrument);
-        if ($part->part_number && $part->part_number > 1) {
+        $filename = $part->original_filename ? pathinfo($part->original_filename, PATHINFO_FILENAME) : ($score->title . ' - ' . ($part->instrument?->name ?? $part->instrument));
+        
+        if (!$part->original_filename && $part->part_number && $part->part_number > 1) {
             $filename .= ' ' . $part->part_number;
         }
 
-        $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
+        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
         return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
     }
 }

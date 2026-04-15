@@ -6,33 +6,61 @@ use App\Http\Controllers\Controller;
 use App\Models\Score;
 use App\Models\ScorePart;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Instrument;
+use App\Models\InstrumentAlias;
 
 class ScorePartController extends Controller
 {
-    public function store(Request $request, Score $score): RedirectResponse
+    public function store(Request $request, Score $score)
     {
         $validated = $request->validate([
             'instrument' => 'required|string|max:255',
             'pdf' => 'required|file|mimes:pdf|max:20480',
         ]);
 
-        $path = $request->file('pdf')->store("scores/{$score->id}", 'public');
+        $file = $request->file('pdf');
+        $originalName = $file->getClientOriginalName();
+        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
+        $path = $file->store("scores/{$score->id}", $disk);
 
-        $score->parts()->create([
-            'instrument' => $validated['instrument'],
-            'pdf_path' => $path,
+        // Resolve instrument_id
+        $matchedInstrumentId = null;
+        $foundInstrument = Instrument::where('name', $validated['instrument'])->first();
+        if ($foundInstrument) {
+            $matchedInstrumentId = $foundInstrument->id;
+        }
+
+        $part = $score->parts()->create([
+            'instrument'        => $validated['instrument'],
+            'instrument_id'     => $matchedInstrumentId,
+            'pdf_path'          => $path,
+            'original_filename' => $originalName,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'part'    => $part
+            ]);
+        }
 
         return redirect()->route('beheer.bladmuziek.edit', $score)->with('success', 'Partij toegevoegd.');
     }
 
-    public function destroy(ScorePart $part): RedirectResponse
+    public function destroy(ScorePart $part)
     {
-        Storage::disk('public')->delete($part->pdf_path);
+        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
+        Storage::disk($disk)->delete($part->pdf_path);
+        
         $scoreId = $part->score_id;
         $part->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
 
         return redirect()->route('beheer.bladmuziek.edit', $scoreId)->with('success', 'Partij verwijderd.');
     }

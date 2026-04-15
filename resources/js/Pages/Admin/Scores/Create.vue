@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
@@ -24,6 +25,8 @@ const form = useForm({
 const fileInputSingle = ref(null);
 const fileInputFolder = ref(null);
 const isDragging = ref(false);
+const isUploading = ref(false);
+const currentScoreId = ref(null);
 
 function triggerFileInputSingle() {
     fileInputSingle.value.click();
@@ -170,6 +173,8 @@ function processFiles(files) {
             inferredTitle: inferredTitle,
             original_parsed_instrument: inferredInstrumentStr,
             instrument: matchedInstrument,
+            status: 'pending',
+            statusMessage: '',
         });
         
         if (!form.title && inferredTitle) {
@@ -211,26 +216,62 @@ async function onAddInstrument(newName) {
     }
 }
 
-function submit() {
-    form.post(route('beheer.bladmuziek.store'), { 
-        forceFormData: true,
-        onError: (errors) => {
-            console.error("Validation or server errors during upload:", errors);
-            // Even if we have errors, don't crash
-        },
-        onFinish: () => {
-            console.log("Upload attempt finished.");
+async function submit() {
+    if (isUploading.value) return;
+    
+    isUploading.value = true;
+    
+    try {
+        // Step 1: Create Score Meta first
+        const metaResponse = await axios.post(route('beheer.bladmuziek.store'), {
+            title: form.title,
+            composer: form.composer,
+            arranger: form.arranger,
+        });
+        
+        currentScoreId.value = metaResponse.data.score.id;
+        
+        // Step 2: Sequential Uploads
+        for (let i = 0; i < form.parts.length; i++) {
+            const part = form.parts[i];
+            if (part.status === 'success') continue;
+            
+            part.status = 'uploading';
+            part.statusMessage = 'Bezig met uploaden...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('instrument', part.instrument);
+                formData.append('pdf', part.file);
+                
+                await axios.post(route('beheer.bladmuziek.partijen.store', currentScoreId.value), formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
+                part.status = 'success';
+                part.statusMessage = 'Opgeslagen';
+            } catch (err) {
+                part.status = 'error';
+                let msg = 'Upload mislukt';
+                if (err.response?.data?.message) {
+                    msg = err.response.data.message;
+                } else if (err.message) {
+                    msg = err.message;
+                }
+                part.statusMessage = msg;
+            }
         }
-    });
-
-    // Provide a helpful fallback UI message if the browser throws immediately
-    window.addEventListener('unhandledrejection', (event) => {
-        if (event.reason && event.reason.isAxiosError) {
-            alert("UPLOAD CRASHT (Axios Error): " + event.reason.message + "\n\nAls er een 413 foutmelding bij staat, staat er ergens een server/upload limiet in de weg.");
-        } else if (event.reason) {
-            alert("UPLOAD CRASHT (Onbekende JS Error): " + event.reason.toString());
+        
+        const anyFailed = form.parts.some(p => p.status === 'error');
+        if (!anyFailed) {
+            router.visit(route('beheer.bladmuziek.index'));
         }
-    });
+    } catch (err) {
+        console.error("Fout bij aanmaken muziekstuk:", err);
+        alert("Fout: Kon het muziekstuk niet aanmaken. Controleer de verplichte velden.");
+    } finally {
+        isUploading.value = false;
+    }
 }
 </script>
 
@@ -314,6 +355,8 @@ function submit() {
                             :index="index"
                             :instruments="instrumentsList"
                             :modelValue="part.instrument"
+                            :status="part.status"
+                            :statusMessage="part.statusMessage"
                             @update:modelValue="val => { part.instrument = val; onInstrumentChanged(index, val); }"
                             :errorInstrument="form.errors[`parts.${index}.instrument`]"
                             :errorPdf="form.errors[`parts.${index}.pdf`]"
@@ -330,8 +373,15 @@ function submit() {
                         <Link :href="route('beheer.bladmuziek.index')" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
                             Annuleren
                         </Link>
-                        <button type="button" class="bg-blue-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50" @click="submit" :disabled="form.processing">
-                            <span>Muziekstuk Opslaan</span>
+                        <Link v-if="form.parts.some(p => p.status === 'error')" :href="route('beheer.bladmuziek.index')" class="bg-blue-950 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors">
+                            Klaar
+                        </Link>
+                        <button v-else type="button" class="bg-blue-950 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50 flex items-center gap-2" @click="submit" :disabled="isUploading">
+                            <svg v-if="isUploading" class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>{{ isUploading ? 'Bezig met opslaan...' : 'Muziekstuk Opslaan' }}</span>
                         </button>
                     </div>
                 </SectionCard>
