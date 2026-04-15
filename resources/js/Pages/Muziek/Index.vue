@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PdfPreviewModal from '@/Components/PdfPreviewModal.vue';
 
 const props = defineProps({
     scores: Array,
@@ -13,6 +14,10 @@ const props = defineProps({
 const search = ref('');
 const selectedInstrumentId = ref(props.primaryInstrument?.id || null);
 const expandedScores = ref(new Set());
+
+const previewUrl = ref('');
+const previewTitle = ref('');
+const showPreview = ref(false);
 
 const filteredScores = computed(() => {
     let filtered = props.scores || [];
@@ -47,6 +52,19 @@ function getPartDisplayName(part) {
 }
 
 const getDownloadUrl = (scoreId, partId) => route('muziek.download', { score: scoreId, part: partId });
+const getViewUrl = (scoreId, partId) => route('muziek.view', { score: scoreId, part: partId });
+
+function openPreview(score, part) {
+    previewUrl.value = getViewUrl(score.id, part.id);
+    previewTitle.value = `${score.title} - ${getPartDisplayName(part)}`;
+    showPreview.value = true;
+}
+
+function closePreview() {
+    showPreview.value = false;
+    previewUrl.value = '';
+}
+
 const isUserPart = (part) => selectedInstrumentId.value && part.instrument_id === selectedInstrumentId.value;
 
 const getSortedParts = (parts) => {
@@ -166,18 +184,35 @@ const getSortedParts = (parts) => {
 
                         <div v-if="expandedScores.has(score.id)" class="px-10 pb-10 border-t border-gray-50 bg-gray-50/30">
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-10 text-left">
-                                <a 
+                                <div 
                                     v-for="part in getSortedParts(score.parts)"
                                     :key="'part-'+part.id"
-                                    :href="getDownloadUrl(score.id, part.id)"
-                                    class="flex items-center justify-between p-5 rounded-2xl transition-all active:scale-95"
-                                    :class="isUserPart(part) ? 'bg-yellow-400 shadow-lg shadow-yellow-400/20' : 'bg-white border border-gray-100 hover:border-blue-200'"
+                                    class="flex items-center justify-between p-5 rounded-2xl transition-all border"
+                                    :class="isUserPart(part) ? 'bg-yellow-400 border-yellow-400 shadow-lg shadow-yellow-400/20' : 'bg-white border-gray-100 hover:border-blue-200 shadow-sm'"
                                 >
-                                    <span class="text-[11px] font-black uppercase tracking-widest" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-500'">
+                                    <span class="text-[11px] font-black uppercase tracking-widest truncate mr-2" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-500'">
                                         {{ getPartDisplayName(part) }} {{ isUserPart(part) ? '★' : '' }}
                                     </span>
-                                    <svg class="w-5 h-5" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                </a>
+                                    
+                                    <div class="flex items-center gap-3">
+                                        <button 
+                                            @click="openPreview(score, part)"
+                                            class="p-1 hover:scale-110 transition-transform"
+                                            :class="isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600'"
+                                            title="Bekijk PDF"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        </button>
+                                        <a 
+                                            :href="getDownloadUrl(score.id, part.id)"
+                                            class="p-1 hover:scale-110 transition-transform"
+                                            :class="isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600'"
+                                            title="Download PDF"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,5 +220,12 @@ const getSortedParts = (parts) => {
 
             </div>
         </div>
+
+        <PdfPreviewModal 
+            :show="showPreview" 
+            :url="previewUrl" 
+            :title="previewTitle" 
+            @close="closePreview" 
+        />
     </AuthenticatedLayout>
 </template>

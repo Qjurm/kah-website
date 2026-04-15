@@ -26,7 +26,7 @@ const props = defineProps({
     statusMessage: String,
 });
 
-const emit = defineEmits(['remove', 'update:modelValue', 'add-instrument']);
+const emit = defineEmits(['remove', 'update:modelValue', 'add-instrument', 'openPreview']);
 
 const open = ref(false);
 const searchQuery = ref('');
@@ -55,6 +55,13 @@ function addNewInstrument() {
     emit('add-instrument', searchQuery.value);
     selectInstrument(searchQuery.value);
     searchQuery.value = '';
+}
+
+function previewLocalFile() {
+    if (props.part.pdf instanceof File) {
+        const url = URL.createObjectURL(props.part.pdf);
+        emit('openPreview', url, props.part.filename || 'Voorbeeld');
+    }
 }
 </script>
 
@@ -160,7 +167,19 @@ function addNewInstrument() {
                 </div>
             </div>
             
-            <div class="ml-4 flex-shrink-0" v-if="status !== 'success'">
+            <div class="ml-4 flex-shrink-0 flex items-center gap-2" v-if="status !== 'success'">
+                <button 
+                    v-if="part.pdf"
+                    type="button" 
+                    @click="previewLocalFile"
+                    class="text-blue-400 hover:text-blue-600 p-3 rounded-xl hover:bg-blue-50 transition-all active:scale-90"
+                    title="Bekijk PDF"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </button>
                 <button type="button" @click="$emit('remove')" class="text-gray-300 hover:text-red-500 p-3 rounded-xl hover:bg-red-50 transition-all active:scale-90" title="Verwijder PDF">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

@@ -48,4 +48,11 @@ class MusicController extends Controller
         $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
         return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
     }
+
+    public function view(Score $score, ScorePart $part)
+    {
+        abort_if($part->score_id !== $score->id, 404);
+        $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
+        return Storage::disk($disk)->response($part->pdf_path);
+    }
 }

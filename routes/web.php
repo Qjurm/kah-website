@@ -24,6 +24,7 @@ Route::middleware(['auth', 'musician'])->post('/mijn-instrumenten', [\App\Http\C
 Route::middleware(['auth', 'musician'])->group(function () {
     Route::get('/muziek', [MusicController::class, 'index'])->name('muziek.index');
     Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MusicController::class, 'download'])->name('muziek.download');
+    Route::get('/muziek/bladmuziek/{score}/partijen/{part}/view', [MusicController::class, 'view'])->name('muziek.view');
     
     // Redirect routes for dual-role users
     Route::get('/muziek-home', function () {
@@ -35,9 +36,9 @@ Route::middleware(['auth', 'musician'])->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('bladmuziek', ScoreController::class)->parameters(['bladmuziek' => 'score']);
-    Route::post('bladmuziek/{score}', [ScoreController::class, 'update'])->name('bladmuziek.update_multipart');
     Route::post('bladmuziek/{score}/partijen', [ScorePartController::class, 'store'])->name('bladmuziek.partijen.store');
     Route::get('bladmuziek/{score}/partijen/{part}/download', [ScoreController::class, 'download'])->name('bladmuziek.partijen.download');
+    Route::get('bladmuziek/{score}/partijen/{part}/view', [ScoreController::class, 'view'])->name('bladmuziek.partijen.view');
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class)->parameters(['concerten' => 'concert']);
     Route::resource('instrumenten', InstrumentController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['instrumenten' => 'instrument']);

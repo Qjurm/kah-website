@@ -8,6 +8,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import SectionCard from '@/Components/SectionCard.vue';
 import ScorePartItem from '@/Components/ScorePartItem.vue';
+import PdfPreviewModal from '@/Components/PdfPreviewModal.vue';
 
 const props = defineProps({
     instruments: Array,
@@ -270,6 +271,25 @@ async function submit() {
         isUploading.value = false;
     }
 }
+
+const previewUrl = ref('');
+const previewTitle = ref('');
+const showPreview = ref(false);
+
+function openPreview(url, title) {
+    previewUrl.value = url;
+    previewTitle.value = title;
+    showPreview.value = true;
+}
+
+function closePreview() {
+    showPreview.value = false;
+    // Optionally revoke the object URL to save memory if it was a local file
+    if (previewUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl.value);
+    }
+    previewUrl.value = '';
+}
 </script>
 
 <template>
@@ -277,9 +297,14 @@ async function submit() {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Nieuw stuk toevoegen</h2>
-                <Link :href="route('beheer.bladmuziek.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col gap-1 text-left">
+                    <h2 class="text-xl font-black leading-tight text-blue-950 italic">Nieuw Stuk Toevoegen</h2>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Bibliotheek beheer</p>
+                </div>
+                <Link :href="route('beheer.bladmuziek.index')" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-950 px-6 py-3 transition-colors">
+                    &larr; Terug naar overzicht
+                </Link>
             </div>
         </template>
 
@@ -359,6 +384,7 @@ async function submit() {
                             :errorPdf="form.errors[`parts.${index}.pdf`]"
                             @remove="removePart(index)"
                             @add-instrument="onAddInstrument"
+                            @openPreview="openPreview"
                         />
                         <div v-if="form.errors.parts" class="mt-2 text-sm text-red-600">
                             {{ form.errors.parts }}
@@ -385,5 +411,12 @@ async function submit() {
 
             </div>
         </div>
+
+        <PdfPreviewModal 
+            :show="showPreview" 
+            :url="previewUrl" 
+            :title="previewTitle" 
+            @close="closePreview" 
+        />
     </AuthenticatedLayout>
 </template>

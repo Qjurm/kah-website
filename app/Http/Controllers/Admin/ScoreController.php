@@ -242,4 +242,11 @@ class ScoreController extends Controller
         $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
         return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
     }
+
+    public function view(Score $score, \App\Models\ScorePart $part)
+    {
+        abort_if($part->score_id !== $score->id, 404);
+        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
+        return Storage::disk($disk)->response($part->pdf_path);
+    }
 }
