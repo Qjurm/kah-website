@@ -34,6 +34,22 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'translations' => (function() {
+                $baseFile = base_path("lang/nl-NL.json");
+                $localeFile = base_path("lang/" . app()->getLocale() . ".json");
+                
+                $translations = [];
+                
+                if (file_exists($baseFile)) {
+                    $translations = json_decode(file_get_contents($baseFile), true) ?? [];
+                }
+                
+                if ($localeFile !== $baseFile && file_exists($localeFile)) {
+                    $translations = array_merge($translations, json_decode(file_get_contents($localeFile), true) ?? []);
+                }
+                
+                return $translations;
+            })(),
         ];
     }
 }

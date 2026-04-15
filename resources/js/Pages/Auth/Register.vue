@@ -67,66 +67,44 @@ const submit = () => {
             </div>
 
             <!-- Instrument Selection -->
-            <div class="mt-4">
-                <InputLabel for="instruments" value="Jouw instrumenten" />
-                <div class="relative mt-1">
-                    <button
-                        @click.prevent="isOpen = !isOpen"
-                        type="button"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            <div class="mt-8">
+                <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4 ml-1">Kies je instrument(en)</label>
+                <div class="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 scrollbar-thin">
+                    <div 
+                        v-for="instrument in instruments" 
+                        :key="instrument.id"
+                        @click="() => {
+                            if (form.instruments.includes(instrument.id)) {
+                                form.instruments = form.instruments.filter(id => id !== instrument.id);
+                                if (form.primary_instrument === instrument.id) form.primary_instrument = null;
+                            } else {
+                                form.instruments.push(instrument.id);
+                                if (!form.primary_instrument) form.primary_instrument = instrument.id;
+                            }
+                        }"
+                        class="p-4 rounded-xl border-2 transition-all cursor-pointer text-left active:scale-95"
+                        :class="form.instruments.includes(instrument.id)
+                            ? 'bg-blue-950 border-blue-950 text-white'
+                            : 'bg-white border-gray-100 hover:border-blue-100 text-blue-950'"
                     >
-                        <span v-if="!form.instruments || form.instruments.length === 0" class="text-gray-500">
-                            Selecteer instrumenten...
-                        </span>
-                        <span v-else class="text-gray-900">
-                            {{ form.instruments.length }} instrument(en) geselecteerd
-                        </span>
-                    </button>
-
-                    <div v-if="isOpen" class="absolute z-10 w-full mt-1 border border-gray-300 rounded-lg bg-white shadow-lg">
-                        <div class="max-h-60 overflow-y-auto p-2">
-                            <label
-                                v-for="instrument in instruments"
-                                :key="instrument.id"
-                                class="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        <div class="flex items-center justify-between mb-2">
+                             <div class="w-5 h-5 rounded-full flex items-center justify-center" :class="form.instruments.includes(instrument.id) ? 'bg-yellow-400 text-blue-950' : 'bg-gray-100 text-gray-300'">
+                                <svg v-if="form.instruments.includes(instrument.id)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12M6 12h12"/></svg>
+                            </div>
+                            <span v-if="form.primary_instrument === instrument.id" class="text-[8px] font-black uppercase bg-yellow-400 text-blue-950 px-2 py-0.5 rounded-full">Primair</span>
+                            <button 
+                                v-else-if="form.instruments.includes(instrument.id)"
+                                @click.stop="form.primary_instrument = instrument.id"
+                                class="text-[8px] font-black uppercase text-blue-400 hover:text-white"
                             >
-                                <input
-                                    type="checkbox"
-                                    :checked="form.instruments?.includes(instrument.id)"
-                                    @change="(e) => {
-                                        if (e.target.checked) {
-                                            form.instruments.push(instrument.id);
-                                        } else {
-                                            form.instruments = form.instruments.filter(id => id !== instrument.id);
-                                        }
-                                    }"
-                                    class="rounded"
-                                />
-                                <span class="text-gray-900">{{ instrument.name }}</span>
-                            </label>
+                                Maak primair
+                            </button>
                         </div>
+                        <div class="text-[10px] font-black uppercase tracking-widest truncate">{{ instrument.name }}</div>
                     </div>
                 </div>
                 <InputError class="mt-2" :message="form.errors.instruments" />
-            </div>
-
-            <!-- Primary Instrument Selection -->
-            <div v-if="form.instruments && form.instruments.length > 0" class="mt-4">
-                <InputLabel for="primary_instrument" value="Primair instrument" />
-                <select
-                    v-model="form.primary_instrument"
-                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                    <option :value="null">Selecteer een primair instrument</option>
-                    <option
-                        v-for="id in form.instruments"
-                        :key="id"
-                        :value="id"
-                    >
-                        {{ instruments.find(i => i.id === id)?.name }}
-                    </option>
-                </select>
-                <InputError class="mt-2" :message="form.errors.primary_instrument" />
             </div>
 
             <div class="mt-4">

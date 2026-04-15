@@ -1,386 +1,156 @@
 <script setup>
 import { ref, computed } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link, usePage } from '@inertiajs/vue3';
+import NavTab             from '@/Components/Layout/NavTab.vue';
+import AdminPill          from '@/Components/Layout/AdminPill.vue';
+import AdminBadge         from '@/Components/Layout/AdminBadge.vue';
+import UserDropdown       from '@/Components/Layout/UserDropdown.vue';
+import MobileNavMenu      from '@/Components/Layout/MobileNavMenu.vue';
+import { Link, usePage }  from '@inertiajs/vue3';
 
-const showingNavigationDropdown = ref(false);
+const showMobileMenu = ref(false);
 const page = usePage();
-
-const homeRoute = computed(() => {
-    const role = page.props.auth?.user?.role;
-    if (role === 'admin') return route('beheer.dashboard');
-    if (role === 'musician') return route('muziek.index');
-    return route('home');
-});
 
 const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
 
-// Admin-Musician Toggle Detection
-const isAdminAndMusician = computed(() => {
-    const user = page.props.auth?.user;
-    return user?.role === 'admin'; // Admins can also access musician mode
+const homeRoute = computed(() => {
+    const role = page.props.auth?.user?.role;
+    if (role === 'admin')    return route('beheer.dashboard');
+    if (role === 'musician') return route('mijn-instrument');
+    return route('home');
 });
 
-const currentMode = computed(() => {
-    const currentRoute = route().current();
-    if (currentRoute?.startsWith('beheer.')) {
-        return 'admin';
-    }
-    if (currentRoute?.startsWith('muziek.') || currentRoute === 'mijn-instrument') {
-        return 'musician';
-    }
-    return null;
+const musicianLinks = computed(() => {
+    const translations = page.props.translations || {};
+    const t = (key) => translations[key] || key;
+
+    return [
+        { label: t('Dashboard'),    routeName: 'mijn-instrument',       active: route().current('mijn-instrument') },
+        { label: t('Bibliotheek'),  routeName: 'muziek.index',           active: route().current('muziek.index') },
+        { label: t('Instrumenten'), routeName: 'mijn-instrumenten.edit', active: route().current('mijn-instrumenten.edit') },
+    ];
 });
 
-const toggleLink = computed(() => {
-    if (currentMode.value === 'admin') {
-        return route('muziek.index');
-    }
-    if (currentMode.value === 'musician') {
-        return route('beheer.dashboard');
-    }
-    return null;
-});
+const adminLinks = computed(() => [
+    { label: 'Dashboard',  routeName: 'beheer.dashboard',        active: route().current('beheer.dashboard') },
+    { label: 'Concerten',  routeName: 'beheer.concerten.index',  active: route().current('beheer.concerten.*') },
+    { label: 'Stukken',    routeName: 'beheer.bladmuziek.index', active: route().current('beheer.bladmuziek.*') },
+    { label: 'Gebruikers', routeName: 'beheer.gebruikers.index', active: route().current('beheer.gebruikers.*') },
+]);
 
-const headerClass = computed(() => {
-    if (currentMode.value === 'admin') {
-        return 'bg-blue-900 border-b-4 border-yellow-400';
-    }
-    return 'border-b border-gray-100 bg-white';
-});
+const activeAdminIndex = computed(() => adminLinks.value.findIndex(l => l.active));
 </script>
 
 <template>
-    <div>
-        <div class="min-h-screen bg-gray-100">
-            <nav
-                :class="headerClass"
-            >
-                <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="homeRoute">
-                                    <ApplicationLogo
-                                        :class="{
-                                            'text-white': currentMode === 'admin',
-                                            'text-gray-800': currentMode !== 'admin'
-                                        }"
-                                        class="block h-9 w-auto fill-current"
-                                    />
-                                </Link>
-                            </div>
+    <div class="min-h-screen bg-[#F8F9FB]">
 
-                            <!-- Navigation Links -->
-                                <div  v-if="isAdmin" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                    <NavLink
-                                        :href="route('beheer.dashboard')"
-                                        :active="route().current('beheer.dashboard')"
-                                        :class="{
-                                            'text-white hover:text-gray-100': currentMode === 'admin',
-                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.dashboard')
-                                        }"
-                                    >
-                                        Dashboard
-                                    </NavLink>
-                                    <NavLink
-                                        :href="route('beheer.concerten.index')"
-                                        :active="route().current('beheer.concerten.*')"
-                                        :class="{
-                                            'text-white hover:text-gray-100': currentMode === 'admin',
-                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.concerten.*')
-                                        }"
-                                    >
-                                        Concerten
-                                    </NavLink>
-                                    <NavLink
-                                        :href="route('beheer.bladmuziek.index')"
-                                        :active="route().current('beheer.bladmuziek.*')"
-                                        :class="{
-                                            'text-white hover:text-gray-100': currentMode === 'admin',
-                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.bladmuziek.*')
-                                        }"
-                                    >
-                                        Muziek
-                                    </NavLink>
-                                    <NavLink
-                                        :href="route('beheer.gebruikers.index')"
-                                        :active="route().current('beheer.gebruikers.*')"
-                                        :class="{
-                                            'text-white hover:text-gray-100': currentMode === 'admin',
-                                            'border-yellow-400': currentMode === 'admin' && route().current('beheer.gebruikers.*')
-                                        }"
-                                    >
-                                        Gebruikers
-                                    </NavLink>
+        <!-- ════════════════════════ NAV ════════════════════════ -->
+        <nav class="bg-blue-950 shadow-2xl sticky top-0 z-50">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="flex h-20 items-center justify-between gap-8">
 
-                                    <div class=" bg-white w-1" />
+                    <!-- ── Left: logo + tabs ──────────────────── -->
+                    <div class="flex items-center h-full gap-0 min-w-0">
 
-                                </div>
-                                <div class="space-x-8 w-full pl-4 pr-4 sm:-my-px sm:ms-10 sm:flex">
-                                    <NavLink
-                                        :href="route('muziek.index')"
-                                        :active="route().current('muziek.index')"
-                                        class="text-white"
-                                    >
-                                        Muziek
-                                    </NavLink>
-                                </div>
-                        </div>
+                        <!-- Music Note Logo -->
+                        <Link
+                            :href="homeRoute"
+                            class="logo-link flex shrink-0 items-center justify-center w-12 h-12 bg-yellow-400 rounded-2xl mr-6 hover:rotate-6 transition-all shadow-lg shadow-yellow-400/20"
+                            aria-label="Home"
+                        >
+                            <svg class="w-7 h-7 text-blue-950" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </Link>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center sm:gap-4">
-                            <!-- Mode Indicator Badge (Admin Mode) -->
-                            <span
-                                v-if="isAdmin"
-                                class="inline-block rounded-full bg-yellow-400 px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-900"
+                        <!-- Musician tabs (desktop) -->
+                        <div class="hidden md:flex items-center h-full gap-1">
+                            <NavTab
+                                v-for="link in musicianLinks"
+                                :key="link.routeName"
+                                :href="route(link.routeName)"
+                                :active="link.active"
                             >
-                                ADMIN
-                            </span>
+                                {{ link.label }}
+                            </NavTab>
+                        </div>
 
-                            <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
-                                    <template #trigger>
-                                        <span class="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                :class="{
-                                                    'bg-blue-800 text-gray-100 border-gray-700 hover:text-white': currentMode === 'admin',
-                                                    'bg-white text-gray-500 border-transparent hover:text-gray-700': currentMode !== 'admin'
-                                                }"
-                                                class="inline-flex items-center rounded-md border px-3 py-2 text-sm font-medium leading-4 transition duration-150 ease-in-out focus:outline-none"
-                                            >
-                                                {{ $page.props.auth.user.name }}
-
-                                                <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fill-rule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clip-rule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </template>
-
-                                    <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
-                                            Profile
-                                        </DropdownLink>
-                                        <DropdownLink
-                                            :href="route('logout')"
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </DropdownLink>
-                                    </template>
-                                </Dropdown>
+                        <!-- Divider + Admin pill (desktop, admin only) -->
+                        <template v-if="isAdmin">
+                            <div class="hidden lg:block mx-6 h-8 w-px bg-blue-800/60 self-center shrink-0" aria-hidden="true" />
+                            <div class="hidden lg:block">
+                                <AdminPill
+                                    :links="adminLinks"
+                                    :active-index="activeAdminIndex"
+                                />
                             </div>
-                        </div>
-
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
-                            <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                :class="{
-                                    'text-gray-200 hover:bg-blue-800 hover:text-white focus:bg-blue-800 focus:text-white': currentMode === 'admin',
-                                    'text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500': currentMode !== 'admin'
-                                }"
-                                class="inline-flex items-center justify-center rounded-md p-2 transition duration-150 ease-in-out focus:outline-none"
-                            >
-                                <svg
-                                    class="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
+                        </template>
                     </div>
-                </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div
-                    :class="{
-                        block: showingNavigationDropdown,
-                        hidden: !showingNavigationDropdown,
-                        'bg-blue-800': currentMode === 'admin',
-                        'bg-white': currentMode !== 'admin',
-                    }"
-                    class="sm:hidden"
-                >
-                    <div
-                        :class="{
-                            'bg-blue-800': currentMode === 'admin',
-                        }"
-                        class="space-y-1 pb-3 pt-2"
+                    <div class="hidden sm:flex items-center gap-4 shrink-0">
+                        <AdminBadge v-if="isAdmin" />
+                        <UserDropdown :user="$page.props.auth.user" />
+                    </div>
+
+                    <!-- ── Hamburger (mobile) ─────────────────── -->
+                    <button
+                        class="hamburger -me-2 inline-flex items-center justify-center rounded-2xl p-3
+                               text-blue-200 md:hidden hover:bg-blue-800 hover:text-white transition-all focus:outline-none"
+                        :class="{ 'is-open': showMobileMenu }"
+                        :aria-expanded="showMobileMenu"
+                        aria-label="Menu"
+                        @click="showMobileMenu = !showMobileMenu"
                     >
-                        <ResponsiveNavLink
-                            v-if="isAdmin"
-                            :href="route('beheer.dashboard')"
-                            :active="route().current('beheer.dashboard')"
-                            :class="{
-                                'text-gray-100 hover:bg-blue-700': currentMode === 'admin',
-                            }"
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            v-if="isAdmin"
-                            :href="route('beheer.concerten.index')"
-                            :active="route().current('beheer.concerten.*')"
-                            :class="{
-                                'text-gray-100 hover:bg-blue-700': currentMode === 'admin',
-                            }"
-                        >
-                            Concerten
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            v-if="isAdmin"
-                            :href="route('beheer.bladmuziek.index')"
-                            :active="route().current('beheer.bladmuziek.*')"
-                            :class="{
-                                'text-gray-100 hover:bg-blue-700': currentMode === 'admin',
-                            }"
-                        >
-                            Stukken
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            v-if="!isAdmin"
-                            :href="route('muziek.index')"
-                            :active="route().current('muziek.index')"
-                        >
-                            Muziek
-                        </ResponsiveNavLink>
-                    </div>
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <path :class="{ hidden: showMobileMenu, 'inline-flex': !showMobileMenu }"
+                                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                  d="M4 6h16M4 12h16M4 18h16"/>
+                            <path :class="{ hidden: !showMobileMenu, 'inline-flex': showMobileMenu }"
+                                  stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                  d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
 
-                    <!-- Responsive Settings Options -->
-                    <div
-                        :class="{
-                            'border-t border-blue-700 bg-blue-800': currentMode === 'admin',
-                            'border-t border-gray-200 bg-white': currentMode !== 'admin',
-                        }"
-                        class="pb-1 pt-4"
-                    >
-                        <div class="px-4">
-                            <div
-                                :class="{
-                                    'text-gray-100': currentMode === 'admin',
-                                    'text-gray-800': currentMode !== 'admin',
-                                }"
-                                class="text-base font-medium"
-                            >
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div
-                                :class="{
-                                    'text-gray-300': currentMode === 'admin',
-                                    'text-gray-500': currentMode !== 'admin',
-                                }"
-                                class="text-sm font-medium"
-                            >
-                                {{ $page.props.auth.user.email }}
-                            </div>
-                            <!-- Mode Indicator Badge (Mobile) -->
-                            <div
-                                v-if="currentMode === 'admin'"
-                                class="mt-2 inline-block rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold uppercase tracking-wide text-gray-900"
-                            >
-                                ADMIN
-                            </div>
-                        </div>
-
-                        <!-- Mode Toggle (Mobile) -->
-                        <div
-                            v-if="isAdminAndMusician && toggleLink"
-                            class="mt-3 space-y-1"
-                        >
-                            <ResponsiveNavLink
-                                :href="toggleLink"
-                                as="button"
-                            >
-                                {{ toggleButtonText }}
-                            </ResponsiveNavLink>
-                        </div>
-
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink
-                                :href="route('profile.edit')"
-                                :class="{
-                                    'text-gray-100 hover:bg-blue-700': currentMode === 'admin',
-                                }"
-                            >
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                :href="route('logout')"
-                                method="post"
-                                as="button"
-                                :class="{
-                                    'text-gray-100 hover:bg-blue-700': currentMode === 'admin',
-                                }"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
-                    </div>
                 </div>
-            </nav>
+            </div>
 
-            <!-- Page Heading -->
-            <header
-                class="bg-white shadow"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                    <slot name="header" />
-                </div>
-            </header>
+            <!-- Mobile menu (extracted component) -->
+            <MobileNavMenu
+                :show="showMobileMenu"
+                :is-admin="isAdmin"
+                :musician-links="musicianLinks"
+                :admin-links="adminLinks"
+                :user-name="$page.props.auth.user.name"
+                :user-email="$page.props.auth.user.email"
+            />
+        </nav>
 
-            <!-- Page Content -->
-            <main>
-                <slot />
-            </main>
-        </div>
+        <!-- Page heading slot -->
+        <header v-if="$slots.header" class="bg-white border-b border-gray-100 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
+            <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                <slot name="header" />
+            </div>
+        </header>
+
+        <!-- Page content -->
+        <main class="transition-all duration-300">
+            <slot />
+        </main>
+
     </div>
 </template>
+
+<style scoped>
+.logo-link {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+}
+.logo-link:hover {
+    transform: scale(1.1) rotate(6deg);
+}
+
+.hamburger {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hamburger.is-open {
+    background-color: rgba(30, 58, 138, 0.5); /* blue-900/50 */
+}
+</style>

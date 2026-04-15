@@ -36,8 +36,9 @@ ENV APP_URL=${APP_URL}
 ENV ASSET_URL=${APP_URL}
 
 # Install Node dependencies & build assets
-RUN npm install
-RUN npm run build
+RUN npm install -g yarn
+RUN yarn install
+RUN yarn build
 
 # Set up .env if not present
 RUN if [ ! -f .env ]; then cp .env.example .env; fi

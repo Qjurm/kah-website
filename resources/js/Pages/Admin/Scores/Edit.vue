@@ -1,294 +1,193 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SearchableSelectWithCreate from '@/Components/Form/SearchableSelectWithCreate.vue';
-import FileUpload from '@/Components/Form/FileUpload.vue';
 
 const props = defineProps({
     score: Object,
     instruments: Array,
 });
 
-// DEBUG: Log what we receive
-console.log('Score Edit - props:', JSON.stringify({ score: props.score, instruments: props.instruments?.length }, null, 2));
-
-// Existing parts (kept from DB)
-const keptParts = ref([]);
-const removedPartIds = ref([]);
-// New parts to add
-const newParts = ref([]);
-
-// Initialize form EMPTY
 const form = useForm({
-    title: '',
-    composer: '',
-    arranger: '',
+    title: props.score.title,
+    composer: props.score.composer,
+    arranger: props.score.arranger,
     removed_part_ids: [],
-    new_parts: [],
-    _method: 'PUT',
+    new_parts: [], // { file, fileName, instrument }
 });
 
-// Watch props.score, populate form when data arrives
-watch(
-    () => props.score,
-    (newScore) => {
-        if (!newScore) return;
+const fileInput = ref(null);
 
-        // Set each form field individually
-        Object.assign(form, {
-            title: newScore.title || '',
-            composer: newScore.composer || '',
-            arranger: newScore.arranger || '',
+function handleFileUpload(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        let suggestedInstrument = '';
+        const fileName = file.name.toLowerCase();
+        
+        props.instruments.forEach(inst => {
+            if (fileName.includes(inst.name.toLowerCase())) suggestedInstrument = inst.name;
+            inst.aliases.forEach(alias => {
+                if (fileName.includes(alias.toLowerCase())) suggestedInstrument = inst.name;
+            });
         });
 
-        // Reset part tracking - handle both wrapped and unwrapped data
-        const parts = newScore.parts?.data ? newScore.parts.data : (newScore.parts || []);
-        keptParts.value = [...parts];
-        removedPartIds.value = [];
-        newParts.value = [];
-    },
-    { immediate: true, deep: true }
-);
-
-const instrumentOptions = computed(() => {
-    if (!props.instruments || !Array.isArray(props.instruments)) {
-        return [];
-    }
-    return props.instruments.map((instr) => {
-        // Handle both string names and object resources
-        const name = typeof instr === 'string' ? instr : (instr.name || '');
-        const value = typeof instr === 'string' ? instr : (instr.name || '');
-        return { value, label: name };
+        form.new_parts.push({
+            pdf: file,
+            fileName: file.name,
+            instrument: suggestedInstrument,
+            original_parsed_instrument: suggestedInstrument,
+        });
     });
-});
-const selectedInstrument = ref(null);
-
-async function createNewInstrument(name) {
-    try {
-        const response = await fetch(route('beheer.api.instruments.store'), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-            },
-            body: JSON.stringify({ name }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            return { value: data.name, label: data.name };
-        } else {
-            const error = await response.json();
-            alert('Fout bij aanmaken instrument: ' + (error.message || JSON.stringify(error)));
-            return null;
-        }
-    } catch (error) {
-        console.error('Error creating instrument:', error);
-        alert('Fout bij aanmaken instrument: ' + error.message);
-        return null;
-    }
-}
-
-function removeExistingPart(part) {
-    removedPartIds.value.push(part.id);
-    keptParts.value = keptParts.value.filter((p) => p.id !== part.id);
-}
-
-function addNewInstrument() {
-    if (!selectedInstrument.value) return;
-    // Get instrument name from options
-    const instrumentName = instrumentOptions.value.find(opt => opt.value === selectedInstrument.value)?.label || selectedInstrument.value;
-    // Allow duplicates! Users can add "Trompet 1" and "Trompet 2"
-    newParts.value.push({ instrument: instrumentName, pdf: null });
-    selectedInstrument.value = null;
-}
-
-function removeNewPart(idx) {
-    newParts.value.splice(idx, 1);
 }
 
 function submit() {
-    form.removed_part_ids = removedPartIds.value;
-    
-    // Flatten new_parts for FormData compatibility
-    newParts.value.forEach((part, idx) => {
-        form[`new_parts.${idx}.instrument`] = part.instrument;
-        if (part.pdf) {
-            form[`new_parts.${idx}.pdf`] = part.pdf;
-        }
-    });
-    
-    form.put(route('beheer.bladmuziek.update', props.score.id), {
+    form.post(route('beheer.bladmuziek.update_multipart', props.score.id), {
         forceFormData: true,
     });
+}
+
+function toggleRemovePart(partId) {
+    const idx = form.removed_part_ids.indexOf(partId);
+    if (idx > -1) form.removed_part_ids.splice(idx, 1);
+    else form.removed_part_ids.push(partId);
 }
 </script>
 
 <template>
-    <Head :title="`Bewerk: ${form.title || 'Stuk'}`" />
-
     <AuthenticatedLayout>
+        <Head :title="'Bewerken: ' + score.title" />
+
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Stuk bewerken</h2>
-                <Link :href="route('beheer.bladmuziek.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
+            <div class="flex items-center justify-between gap-4 text-left">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-xl font-black leading-tight text-blue-950 italic">Stuk Bewerken</h2>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{{ score.title }}</p>
+                </div>
+                <Link :href="route('beheer.bladmuziek.index')" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-950 px-6 py-3 transition-colors">
+                    Terug naar lijst
+                </Link>
             </div>
         </template>
 
-        <div class="py-8">
-            <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div class="py-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                    <!-- Score details -->
-                    <h3 class="text-lg font-bold text-blue-900 mb-6">Stukgegevens</h3>
-                    <div class="space-y-5 mb-8">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Titel *</label>
-                            <input
-                                v-model="form.title"
-                                type="text"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                :class="{ 'border-red-500': form.errors.title }"
-                            />
-                            <p v-if="form.errors.title" class="text-red-500 text-sm mt-1">{{ form.errors.title }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Componist *</label>
-                            <input
-                                v-model="form.composer"
-                                type="text"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                :class="{ 'border-red-500': form.errors.composer }"
-                            />
-                            <p v-if="form.errors.composer" class="text-red-500 text-sm mt-1">{{ form.errors.composer }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Arrangeur</label>
-                            <input
-                                v-model="form.arranger"
-                                type="text"
-                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Existing parts -->
-                    <div class="border-t border-gray-100 pt-8 mb-8">
-                        <h3 class="text-lg font-bold text-blue-900 mb-4">Bestaande partijen</h3>
-                        <div v-if="keptParts.length" class="space-y-2">
-                            <div
-                                v-for="part in keptParts"
-                                :key="part.id"
-                                class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-                                        </svg>
-                                        <span class="text-sm font-medium text-gray-800">{{ part.instrument }}</span>
-                                    </div>
-                                    <a :href="route('beheer.bladmuziek.partijen.download', { score: score.id, part: part.id })" 
-                                       target="_blank"
-                                       class="text-xs text-blue-600 hover:text-blue-800 underline flex items-center gap-1">
-                                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                       Inzien / Downloaden
-                                    </a>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    
+                    <!-- Left: Metadata -->
+                    <div class="lg:col-span-1 space-y-8">
+                        <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm text-left">
+                            <h3 class="text-lg font-black text-blue-950 italic mb-8">Compositie Gegevens</h3>
+                            <form @submit.prevent="submit" class="space-y-6">
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Titel</label>
+                                    <input v-model="form.title" type="text" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"/>
                                 </div>
-                                <button
-                                    type="button"
-                                    class="text-red-500 hover:text-red-700 text-sm font-medium"
-                                    @click="removeExistingPart(part)"
-                                >Verwijderen</button>
-                            </div>
-                        </div>
-                        <div v-else class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 rounded-lg">
-                            Geen bestaande partijen.
-                        </div>
-                    </div>
-
-                    <!-- New parts -->
-                    <div class="border-t border-gray-100 pt-8">
-                        <h3 class="text-lg font-bold text-blue-900 mb-2">Nieuwe partijen toevoegen</h3>
-                        <p class="text-sm text-gray-500 mb-4">Selecteer een instrument en upload de bijbehorende PDF.</p>
-
-                        <div class="flex gap-2 mb-4">
-                            <div class="flex-1">
-                                <SearchableSelectWithCreate
-                                    v-model="selectedInstrument"
-                                    :options="instrumentOptions"
-                                    placeholder="Instrument toevoegen..."
-                                    :clearable="true"
-                                    creatable
-                                    :onCreateNew="createNewInstrument"
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                :disabled="!selectedInstrument"
-                                class="bg-blue-900 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 flex-shrink-0"
-                                @click="addNewInstrument"
-                            >
-                                Toevoegen
-                            </button>
-                        </div>
-
-                        <div v-if="newParts.length" class="space-y-4 mb-6">
-                            <div
-                                v-for="(part, idx) in newParts"
-                                :key="idx"
-                                class="border border-blue-100 bg-blue-50 rounded-xl p-4"
-                            >
-                                <div class="flex items-center justify-between mb-3">
-                                    <div class="flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                                        </svg>
-                                        <span class="font-semibold text-blue-900">{{ part.instrument }}</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        class="text-red-500 hover:text-red-700 text-sm"
-                                        @click="removeNewPart(idx)"
-                                    >Annuleren</button>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Componist</label>
+                                    <input v-model="form.composer" type="text" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"/>
                                 </div>
-                                <FileUpload
-                                    v-model="part.pdf"
-                                    accept=".pdf,application/pdf"
-                                    :label="`PDF voor ${part.instrument}`"
-                                    :max-size-mb="20"
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Arrangeur</label>
+                                    <input v-model="form.arranger" type="text" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"/>
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    :disabled="form.processing"
+                                    class="w-full bg-blue-950 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-blue-900/10 active:scale-95 disabled:opacity-50 mt-4"
+                                >
+                                    Basisgegevens Bijwerken
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right: Parts Management -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Upload New Parts -->
+                        <div class="bg-blue-950 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden text-left">
+                            <div class="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                                <svg class="w-32 h-32" fill="white" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" /></svg>
+                            </div>
+                            
+                            <h3 class="text-xl font-black italic mb-8 relative z-10">Partijen Toevoegen</h3>
+                            
+                            <div class="p-8 border-2 border-dashed border-white/10 rounded-[2rem] bg-white/5 text-center mb-8 relative z-10">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept=".pdf"
+                                    @change="handleFileUpload"
+                                    class="hidden"
+                                    ref="fileInput"
                                 />
-                                <p v-if="form.errors[`new_parts.${idx}.pdf`]" class="text-red-500 text-sm mt-1">
-                                    {{ form.errors[`new_parts.${idx}.pdf`] }}
-                                </p>
+                                <div @click="$refs.fileInput.click()" class="cursor-pointer group">
+                                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-yellow-400 group-hover:text-blue-950 transition-all">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    </div>
+                                    <p class="text-sm font-black italic">Klik om PDF's te selecteren</p>
+                                </div>
+                            </div>
+
+                            <div v-if="form.new_parts.length > 0" class="space-y-4 mb-8 relative z-10 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+                                <div v-for="(part, index) in form.new_parts" :key="index" class="flex items-center gap-4 p-5 bg-white/10 rounded-2xl border border-white/5">
+                                    <div class="w-10 h-10 rounded-xl bg-yellow-400 text-blue-950 flex items-center justify-center font-black text-[10px] shrink-0">
+                                        NEW
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[11px] font-black truncate">{{ part.fileName }}</div>
+                                        <select v-model="part.instrument" class="mt-1 w-full bg-blue-900 border-none rounded-xl px-4 py-2 text-[10px] font-black focus:ring-1 focus:ring-yellow-400">
+                                            <option value="" disabled>Kies instrument...</option>
+                                            <option v-for="inst in instruments" :key="inst.id" :value="inst.name" class="bg-blue-950">{{ inst.name }}</option>
+                                        </select>
+                                    </div>
+                                    <button @click.prevent="form.new_parts.splice(index, 1)" class="text-white/20 hover:text-red-400 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end relative z-10">
+                                <button 
+                                    @click="submit"
+                                    :disabled="form.processing || (form.new_parts.length === 0 && form.removed_part_ids.length === 0)"
+                                    class="bg-yellow-400 text-blue-950 px-10 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-yellow-300 transition-all active:scale-95 shadow-xl shadow-yellow-400/20 disabled:opacity-50"
+                                >
+                                    {{ form.processing ? __('Opslaan...') : __('Wijzigingen Bevestigen') }}
+                                </button>
                             </div>
                         </div>
-                        <div v-else class="text-sm text-gray-400 py-4 text-center border border-dashed border-gray-200 rounded-lg mb-6">
-                            Nog geen nieuwe partijen toegevoegd.
+
+                        <!-- List of existing parts -->
+                        <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm text-left">
+                            <h3 class="text-lg font-black text-blue-950 italic mb-8">Huidige Partijen</h3>
+                            
+                            <div v-if="score.parts.length === 0" class="py-20 text-center bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100">
+                                <p class="text-gray-300 font-black italic">Nog geen partijen geüpload.</p>
+                            </div>
+
+                            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div v-for="part in score.parts" :key="part.id" class="flex items-center justify-between p-5 bg-gray-50/50 rounded-2xl border border-gray-100 group transition-all" :class="{'opacity-50 grayscale border-red-200 bg-red-50/30': form.removed_part_ids.includes(part.id)}">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-xs shadow-inner">
+                                            PDF
+                                        </div>
+                                        <div>
+                                            <div class="font-black text-blue-950 text-sm leading-tight italic">{{ part.instrument?.name || part.instrument }}</div>
+                                            <div v-if="form.removed_part_ids.includes(part.id)" class="text-[9px] font-black uppercase text-red-500 mt-1">Gemarkeerd voor verwijdering</div>
+                                            <a v-else :href="part.file_path" target="_blank" class="text-[9px] font-black uppercase text-blue-400 hover:text-blue-950 transition-colors">Bestand bekijken</a>
+                                        </div>
+                                    </div>
+                                    <button @click="toggleRemovePart(part.id)" class="p-3 transition-colors" :class="form.removed_part_ids.includes(part.id) ? 'text-blue-600' : 'text-gray-300 hover:text-red-500'">
+                                        <svg v-if="form.removed_part_ids.includes(part.id)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4l16 16m0-16L4 20" /></svg>
+                                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Actions -->
-                    <div class="flex gap-3 mt-8 pt-6 border-t border-gray-100">
-                        <button
-                            type="button"
-                            :disabled="form.processing"
-                            class="bg-blue-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50"
-                            @click="submit"
-                        >
-                            <span v-if="form.processing">Opslaan...</span>
-                            <span v-else>Wijzigingen opslaan</span>
-                        </button>
-                        <Link
-                            :href="route('beheer.bladmuziek.index')"
-                            class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-                        >
-                            Annuleren
-                        </Link>
-                    </div>
-
                 </div>
+
             </div>
         </div>
     </AuthenticatedLayout>

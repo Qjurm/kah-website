@@ -99,7 +99,7 @@ class ConcertController extends Controller
                     'composer' => $s->composer,
                 ])->toArray(),
             ],
-            'scores' => $scores->map(fn ($s) => [
+            'allScores' => $scores->map(fn ($s) => [
                 'id'       => $s->id,
                 'number'   => $s->number,
                 'title'    => $s->title,

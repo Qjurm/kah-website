@@ -17,6 +17,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Musician Dashboard
 Route::middleware(['auth', 'musician'])->get('/mijn-instrument', [MusicianDashboardController::class, 'index'])->name('mijn-instrument');
+Route::middleware(['auth', 'musician'])->get('/mijn-instrumenten', [\App\Http\Controllers\UserInstrumentController::class, 'edit'])->name('mijn-instrumenten.edit');
+Route::middleware(['auth', 'musician'])->post('/mijn-instrumenten', [\App\Http\Controllers\UserInstrumentController::class, 'update'])->name('mijn-instrumenten.update');
 
 // Music (auth + musician/admin)
 Route::middleware(['auth', 'musician'])->group(function () {
@@ -32,12 +34,13 @@ Route::middleware(['auth', 'musician'])->group(function () {
 // Admin (Admin Panel) - URLs stay Dutch for users
 Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('bladmuziek', ScoreController::class);
+    Route::resource('bladmuziek', ScoreController::class)->parameters(['bladmuziek' => 'score']);
+    Route::post('bladmuziek/{score}', [ScoreController::class, 'update'])->name('bladmuziek.update_multipart');
     Route::post('bladmuziek/{score}/partijen', [ScorePartController::class, 'store'])->name('bladmuziek.partijen.store');
     Route::get('bladmuziek/{score}/partijen/{part}/download', [ScoreController::class, 'download'])->name('bladmuziek.partijen.download');
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
-    Route::resource('concerten', ConcertController::class);
-    Route::resource('gebruikers', UserController::class)->only(['index', 'create', 'store']);
+    Route::resource('concerten', ConcertController::class)->parameters(['concerten' => 'concert']);
+    Route::resource('gebruikers', UserController::class)->parameters(['gebruikers' => 'user']);
     Route::put('gebruikers/{user}/approve', [UserController::class, 'approve'])->name('gebruikers.approve');
     Route::delete('gebruikers/{user}', [UserController::class, 'destroy'])->name('gebruikers.destroy');
     

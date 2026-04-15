@@ -1,15 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SearchableSelect from '@/Components/Form/SearchableSelect.vue';
-import FileUpload from '@/Components/Form/FileUpload.vue';
 
 const props = defineProps({
-    scores: Array,
+    allScores: Array,
 });
-
-const step = ref(1);
 
 const form = useForm({
     title: '',
@@ -17,253 +13,230 @@ const form = useForm({
     location: '',
     photo: null,
     is_current: false,
-    is_public: true,
     score_ids: [],
 });
 
-// Score selection via SearchableSelect
-const scoreOptions = computed(() =>
-    (props.scores ?? []).map((s) => ({
-        value: s.id,
-        label: `#${s.number} ${s.title} — ${s.composer}`,
-    }))
-);
-const scoreToAdd = ref(null);
+const photoPreview = ref(null);
+const photoInput = ref(null);
 
-const selectedScores = computed(() =>
-    (props.scores ?? []).filter((s) => form.score_ids.includes(s.id))
-);
-
-function addScore() {
-    if (scoreToAdd.value !== null && !form.score_ids.includes(scoreToAdd.value)) {
-        form.score_ids.push(scoreToAdd.value);
+function handlePhotoUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+        form.photo = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            photoPreview.value = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
-    scoreToAdd.value = null;
 }
 
-function removeScore(id) {
-    form.score_ids = form.score_ids.filter((sid) => sid !== id);
+const search = ref('');
+const filteredScores = computed(() => {
+    if (!search.value) return props.allScores;
+    const q = search.value.toLowerCase();
+    return props.allScores.filter(s => 
+        s.title.toLowerCase().includes(q) || 
+        s.composer.toLowerCase().includes(q)
+    );
+});
+
+function toggleScore(scoreId) {
+    const idx = form.score_ids.indexOf(scoreId);
+    if (idx > -1) form.score_ids.splice(idx, 1);
+    else form.score_ids.push(scoreId);
 }
 
 function submit() {
-    form.post(route('beheer.concerten.store'), { forceFormData: true });
+    form.post(route('beheer.concerten.store'), {
+        forceFormData: true,
+    });
 }
 
-const stepLabels = ['Concertgegevens', 'Stukken koppelen'];
+const selectedScoresFull = computed(() => {
+    return form.score_ids.map(id => props.allScores.find(s => s.id === id)).filter(Boolean);
+});
+
+function move(scoreId, direction) {
+    const idx = form.score_ids.indexOf(scoreId);
+    if (idx < 0) return;
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= form.score_ids.length) return;
+    const temp = form.score_ids[idx];
+    form.score_ids[idx] = form.score_ids[newIdx];
+    form.score_ids[newIdx] = temp;
+}
 </script>
 
 <template>
-    <Head title="Nieuw concert" />
-
     <AuthenticatedLayout>
+        <Head title="Nieuw concert inplannen" />
+
         <template #header>
-            <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Nieuw concert toevoegen</h2>
-                <Link :href="route('beheer.concerten.index')" class="text-blue-600 hover:text-blue-900 text-sm">&larr; Terug naar overzicht</Link>
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col gap-1 text-left">
+                    <h2 class="text-xl font-black leading-tight text-blue-950 italic">Project Inplannen</h2>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Nieuw optreden organiseren</p>
+                </div>
+                <Link :href="route('beheer.concerten.index')" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-950 px-6 py-3 transition-colors">
+                    Terug naar overzicht
+                </Link>
             </div>
         </template>
 
-        <div class="py-8">
-            <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-10">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <!-- Step indicator -->
-                <div class="flex items-center mb-8">
-                    <template v-for="(label, idx) in stepLabels" :key="idx">
-                        <button
-                            type="button"
-                            :disabled="idx + 1 > step"
-                            :class="[
-                                'flex items-center gap-2 text-sm font-medium transition-colors',
-                                step === idx + 1 ? 'text-blue-900' : idx + 1 < step ? 'text-green-600 cursor-pointer' : 'text-gray-400 cursor-default',
-                            ]"
-                            @click="idx + 1 < step ? step = idx + 1 : null"
-                        >
-                            <span :class="[
-                                'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 flex-shrink-0',
-                                step === idx + 1 ? 'bg-blue-900 border-blue-900 text-white' : idx + 1 < step ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400',
-                            ]">
-                                <svg v-if="idx + 1 < step" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span v-else>{{ idx + 1 }}</span>
-                            </span>
-                            <span class="hidden sm:inline">{{ label }}</span>
-                        </button>
-                        <div v-if="idx < stepLabels.length - 1" class="flex-1 h-px bg-gray-200 mx-3" />
-                    </template>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-
-                    <!-- STEP 1: Concert details -->
-                    <div v-if="step === 1">
-                        <h3 class="text-lg font-bold text-blue-900 mb-6">Concertgegevens</h3>
-                        <div class="space-y-5">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Titel *</label>
-                                <input
-                                    v-model="form.title"
-                                    type="text"
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    :class="{ 'border-red-500': form.errors.title }"
-                                />
-                                <p v-if="form.errors.title" class="text-red-500 text-sm mt-1">{{ form.errors.title }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Datum *</label>
-                                <input
-                                    v-model="form.date"
-                                    type="date"
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    :class="{ 'border-red-500': form.errors.date }"
-                                />
-                                <p v-if="form.errors.date" class="text-red-500 text-sm mt-1">{{ form.errors.date }}</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Locatie</label>
-                                <input
-                                    v-model="form.location"
-                                    type="text"
-                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Foto (optioneel)</label>
-                                <FileUpload
-                                    v-model="form.photo"
-                                    accept="image/*"
-                                    label="Klik om een foto te uploaden"
-                                    :max-size-mb="5"
-                                />
-                                <p v-if="form.errors.photo" class="text-red-500 text-sm mt-1">{{ form.errors.photo }}</p>
-                            </div>
-
-                            <!-- Toggles -->
-                            <div class="space-y-3 pt-2">
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <div
-                                        :class="[
-                                            'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                                            form.is_current ? 'bg-blue-900' : 'bg-gray-200',
-                                        ]"
-                                        @click="form.is_current = !form.is_current"
-                                    >
-                                        <span :class="[
-                                            'absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                                            form.is_current ? 'translate-x-4' : 'translate-x-0',
-                                        ]" />
-                                    </div>
-                                    <div>
-                                        <span class="text-sm font-medium text-gray-700">Huidig concert</span>
-                                        <p class="text-xs text-gray-400">Stel dit in als het huidige/komende concert (één tegelijk)</p>
-                                    </div>
-                                </label>
-
-                                <label class="flex items-center gap-3 cursor-pointer group">
-                                    <div
-                                        :class="[
-                                            'relative w-10 h-6 rounded-full transition-colors flex-shrink-0',
-                                            form.is_public ? 'bg-blue-900' : 'bg-gray-200',
-                                        ]"
-                                        @click="form.is_public = !form.is_public"
-                                    >
-                                        <span :class="[
-                                            'absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                                            form.is_public ? 'translate-x-4' : 'translate-x-0',
-                                        ]" />
-                                    </div>
-                                    <div>
-                                        <span class="text-sm font-medium text-gray-700">Openbaar</span>
-                                        <p class="text-xs text-gray-400">Zichtbaar op de publieke website</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="flex gap-3 mt-8">
-                            <button
-                                type="button"
-                                :disabled="!form.title || !form.date"
-                                class="bg-blue-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40"
-                                @click="step = 2"
-                            >
-                                Volgende &rarr;
-                            </button>
-                            <Link :href="route('beheer.concerten.index')" class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
-                                Annuleren
-                            </Link>
-                        </div>
-                    </div>
-
-                    <!-- STEP 2: Link scores -->
-                    <div v-else-if="step === 2">
-                        <h3 class="text-lg font-bold text-blue-900 mb-2">Stukken koppelen</h3>
-                        <p class="text-sm text-gray-500 mb-6">Selecteer de stukken die op dit concert gespeeld worden.</p>
-
-                        <!-- Add score -->
-                        <div class="flex gap-2 mb-4">
-                            <div class="flex-1">
-                                <SearchableSelect
-                                    v-model="scoreToAdd"
-                                    :options="scoreOptions"
-                                    placeholder="Zoek een stuk..."
-                                    :clearable="true"
-                                />
-                            </div>
-                            <button
-                                type="button"
-                                :disabled="scoreToAdd === null"
-                                class="bg-blue-900 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-40 flex-shrink-0"
-                                @click="addScore"
-                            >
-                                Toevoegen
-                            </button>
-                        </div>
-
-                        <!-- Selected scores -->
-                        <div v-if="selectedScores.length" class="space-y-2 mb-6">
-                            <div
-                                v-for="score in selectedScores"
-                                :key="score.id"
-                                class="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-lg"
-                            >
-                                <div class="min-w-0">
-                                    <p class="text-sm font-medium text-blue-900 truncate">{{ score.title }}</p>
-                                    <p class="text-xs text-gray-500">{{ score.composer }}</p>
+                <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    
+                    <!-- Left Column: Settings -->
+                    <div class="lg:col-span-1 space-y-8">
+                        <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm text-left">
+                            <h3 class="text-lg font-black text-blue-950 italic mb-8">Concert Details</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Titel van het Optreden</label>
+                                    <input v-model="form.title" type="text" placeholder="Bijv. Voorjaarsconcert" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all placeholder:text-gray-300"/>
+                                    <div v-if="form.errors.title" class="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{{ form.errors.title }}</div>
                                 </div>
-                                <button
-                                    type="button"
-                                    class="text-red-500 hover:text-red-700 text-sm ml-3 flex-shrink-0"
-                                    @click="removeScore(score.id)"
-                                >Verwijderen</button>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Datum</label>
+                                    <input v-model="form.date" type="date" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all"/>
+                                    <div v-if="form.errors.date" class="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{{ form.errors.date }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Locatie</label>
+                                    <input v-model="form.location" type="text" placeholder="Locatienaam" class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all placeholder:text-gray-300"/>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-3 ml-1">Project Afbeedling</label>
+                                    <div 
+                                        @click="$refs.photoInput.click()"
+                                        class="relative w-full aspect-video rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden group hover:border-blue-200 transition-all"
+                                    >
+                                        <input 
+                                            type="file" 
+                                            ref="photoInput" 
+                                            class="hidden" 
+                                            accept="image/*"
+                                            @change="handlePhotoUpload"
+                                        />
+                                        
+                                        <template v-if="photoPreview">
+                                            <img :src="photoPreview" class="w-full h-full object-cover"/>
+                                            <div class="absolute inset-0 bg-blue-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                                <span class="text-[10px] font-black uppercase tracking-widest text-white">Verander Foto</span>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <svg class="w-8 h-8 text-gray-200 group-hover:text-blue-200 transition-all mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-300">{{ __('Sleep foto hier of klik') }}</span>
+                                        </template>
+                                    </div>
+                                    <div v-if="form.errors.photo" class="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{{ form.errors.photo }}</div>
+                                </div>
+                                <div class="pt-4">
+                                    <label class="flex items-center gap-4 cursor-pointer group">
+                                        <div class="relative">
+                                            <input type="checkbox" v-model="form.is_current" class="sr-only"/>
+                                            <div class="w-14 h-8 bg-gray-200 rounded-full transition-colors group-hover:bg-gray-300" :class="{'bg-yellow-400': form.is_current}"></div>
+                                            <div class="absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform" :class="{'translate-x-6': form.is_current}"></div>
+                                        </div>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-blue-950">Direct instellen als focus project</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-                        <div v-else class="text-sm text-gray-400 mb-6 py-6 text-center border border-dashed border-gray-200 rounded-lg">
-                            Nog geen stukken gekoppeld.
-                        </div>
 
-                        <div class="flex gap-3">
-                            <button
-                                type="button"
-                                :disabled="form.processing"
-                                class="bg-blue-900 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50"
-                                @click="submit"
-                            >
-                                <span v-if="form.processing">Opslaan...</span>
-                                <span v-else>Concert opslaan</span>
-                            </button>
-                            <button type="button" class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors" @click="step = 1">&larr; Terug</button>
-                        </div>
-                        <p v-if="form.errors.title || form.errors.date" class="text-red-500 text-sm mt-3">
-                            Er zijn fouten in stap 1. <button type="button" class="underline" @click="step = 1">Ga terug</button>.
-                        </p>
+                        <button 
+                            type="submit" 
+                            :disabled="form.processing"
+                            class="w-full bg-blue-950 text-white py-6 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-blue-900/20 active:scale-95 disabled:opacity-50"
+                        >
+                            {{ form.processing ? 'Bezig met opslaan...' : 'Optreden Inplannen' }}
+                        </button>
                     </div>
 
-                </div>
+                    <!-- Right Column: Program Selection -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm text-left">
+                            <div class="flex items-center justify-between mb-10">
+                                <h3 class="text-lg font-black text-blue-950 italic">Programma Samenstellen</h3>
+                                <div class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                    {{ form.score_ids.length }} Geselecteerd
+                                </div>
+                            </div>
+
+                            <div v-if="selectedScoresFull.length === 0" class="py-20 text-center bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-100 mb-10">
+                                <p class="text-gray-300 font-black italic">Selecteer hieronder welke stukken er gespeeld gaan worden.</p>
+                            </div>
+                            
+                            <div v-else class="space-y-4 mb-10">
+                                <div v-for="(sc, i) in selectedScoresFull" :key="'sel-'+sc.id" class="flex items-center gap-6 p-6 bg-gray-50/50 rounded-2xl border border-gray-100 group">
+                                    <div class="w-10 h-10 rounded-full bg-blue-950 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-lg">
+                                        {{ i + 1 }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-black text-blue-950 italic text-base leading-tight">{{ sc.title }}</div>
+                                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{{ sc.composer }}</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" @click="move(sc.id, -1)" :disabled="i === 0" class="p-3 rounded-xl bg-white text-gray-400 hover:text-blue-950 shadow-sm border border-gray-100 disabled:opacity-10">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/></svg>
+                                        </button>
+                                        <button type="button" @click="move(sc.id, 1)" :disabled="i === selectedScoresFull.length - 1" class="p-3 rounded-xl bg-white text-gray-400 hover:text-blue-950 shadow-sm border border-gray-100 disabled:opacity-10">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"/></svg>
+                                        </button>
+                                        <button type="button" @click="toggleScore(sc.id)" class="p-3 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white shadow-sm border border-red-100/50 ml-2 transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="border-gray-50 mb-10"/>
+
+                            <div class="space-y-6">
+                                <div class="relative">
+                                    <input v-model="search" type="text" placeholder="Zoek in muziekbibliotheek..." class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 focus:ring-2 focus:ring-yellow-400 transition-all pl-12"/>
+                                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-200">
+                                    <button 
+                                        type="button"
+                                        v-for="sc in filteredScores" 
+                                        :key="'lib-'+sc.id" 
+                                        @click="toggleScore(sc.id)"
+                                        class="flex items-center justify-between p-5 rounded-2xl border transition-all text-left group"
+                                        :class="form.score_ids.includes(sc.id) 
+                                            ? 'bg-blue-950 border-blue-950' 
+                                            : 'bg-white border-gray-100 hover:border-blue-200'"
+                                    >
+                                        <div class="flex-1 min-w-0 pr-4">
+                                            <div class="font-black text-[13px] leading-tight break-words italic transition-colors" :class="form.score_ids.includes(sc.id) ? 'text-white' : 'text-blue-950'">{{ sc.title }}</div>
+                                            <div class="text-[9px] font-black uppercase tracking-widest mt-0.5 transition-colors" :class="form.score_ids.includes(sc.id) ? 'text-blue-400' : 'text-gray-400'">{{ sc.composer }}</div>
+                                        </div>
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center transition-all" :class="form.score_ids.includes(sc.id) ? 'bg-yellow-400 text-blue-950' : 'bg-gray-100 text-gray-300 group-hover:bg-blue-50 group-hover:text-blue-600'">
+                                            <svg v-if="form.score_ids.includes(sc.id)" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12M6 12h12"/></svg>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
             </div>
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+</style>

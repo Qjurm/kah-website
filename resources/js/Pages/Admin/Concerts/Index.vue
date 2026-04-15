@@ -1,8 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
-import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 
 defineProps({
     concerts: Object,
@@ -30,108 +28,101 @@ function formatDate(d) {
 </script>
 
 <template>
-    <Head title="Concerten beheren" />
-
     <AuthenticatedLayout>
+        <Head title="Concerten beheren" />
+
         <template #header>
             <div class="flex items-center justify-between gap-4">
-                <div class="flex flex-col gap-1">
-                    <h2 class="text-xl font-semibold leading-tight text-gray-800">Concerten beheren</h2>
-                    <p class="text-sm text-gray-600">Voeg concerten toe, koppel stukken, en beheer datums</p>
+                <div class="flex flex-col gap-1 text-left">
+                    <h2 class="text-xl font-black leading-tight text-blue-950 italic">Optredens</h2>
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Planning en programma beheer</p>
                 </div>
-                <Link :href="route('beheer.concerten.create')" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-800 transition-colors whitespace-nowrap">
+                <Link :href="route('beheer.concerten.create')" class="bg-blue-950 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-900 transition-all active:scale-95 shadow-xl shadow-blue-900/20">
                     + Nieuw concert
                 </Link>
             </div>
         </template>
 
-        <div class="py-8">
+        <div class="py-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <!-- Section header -->
-                <SectionHeader 
-                    title="Concerten beheren"
-                    subtitle="Voeg concerten toe, koppel stukken, en beheer datums"
-                />
-
-                <!-- Current Concert Banner -->
-                <div v-if="concerts.data.some(c => c.is_current)" class="mb-8 bg-yellow-50 border-l-4 border-yellow-600 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-2">Huidig concert</h3>
-                    <div v-for="concert in concerts.data.filter(c => c.is_current)" :key="concert.id" class="text-yellow-900">
-                        <p class="font-bold">{{ concert.title }}</p>
-                        <p class="text-sm">{{ formatDate(concert.date) }} · {{ concert.location }}</p>
+                <div v-if="concerts.data.some(c => c.is_current)" class="mb-10 bg-yellow-400 rounded-[2.5rem] p-10 shadow-xl relative overflow-hidden text-left">
+                    <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none text-blue-950">
+                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-950/40 mb-3">Huidig Focus Project</div>
+                        <div v-for="concert in concerts.data.filter(c => c.is_current)" :key="'focus-'+concert.id" class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 class="text-4xl font-black text-blue-950 italic mb-2 leading-tight">{{ concert.title }}</h3>
+                                <p class="text-blue-950/60 font-black uppercase tracking-widest text-[11px]">{{ formatDate(concert.date) }} · {{ concert.location }}</p>
+                            </div>
+                            <Link :href="route('beheer.concerten.edit', concert.id)" class="bg-blue-950 text-white px-8 py-4 rounded-2xl font-black text-[10px] tracking-widest uppercase hover:bg-black transition-all shadow-lg active:scale-95 whitespace-nowrap">
+                                Instellen & Volgorde
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Concerts Table -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50/50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titel</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Datum</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locatie</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acties</th>
+                                <th class="px-10 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Naam Optreden</th>
+                                <th class="px-10 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Locatie</th>
+                                <th class="px-10 py-6 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Status</th>
+                                <th class="px-10 py-6 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Acties</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="concert in concerts.data" :key="concert.id" class="hover:bg-gray-50 transition-colors" :class="{'bg-yellow-50': concert.is_current}">
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                    {{ concert.title }}
+                        <tbody class="bg-white divide-y divide-gray-50">
+                            <tr v-for="concert in concerts.data" :key="'row-'+concert.id" class="hover:bg-blue-50/30 transition-colors" :class="{'bg-yellow-50/30': concert.is_current}">
+                                <td class="px-10 py-8">
+                                    <div class="text-lg font-black text-blue-950 leading-tight italic">{{ concert.title }}</div>
+                                    <div class="text-[10px] font-black text-gray-400 mt-1 uppercase tracking-widest">{{ formatDate(concert.date) }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ formatDate(concert.date) }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ concert.location || '-' }}</td>
-                                <td class="px-6 py-4 text-sm">
+                                <td class="px-10 py-8 text-sm font-bold text-gray-500 italic">
+                                    {{ concert.location || 'Nog geen locatie' }}
+                                </td>
+                                <td class="px-10 py-8">
                                     <button
                                         @click="toggleCurrent(concert)"
-                                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold transition-colors"
+                                        class="inline-flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all active:scale-90"
                                         :class="concert.is_current
-                                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                                            ? 'bg-yellow-400 text-blue-950 shadow-md shadow-yellow-400/20'
+                                            : 'bg-gray-100 text-gray-300 hover:bg-gray-200 hover:text-blue-950'"
                                     >
-                                        <span v-if="concert.is_current">🎯 Huidig</span>
-                                        <span v-else>Instellen</span>
+                                        {{ concert.is_current ? '🎯 Actief' : 'Activeren' }}
                                     </button>
                                 </td>
-                                <td class="px-6 py-4 text-right text-sm space-x-3">
-                                    <Link :href="route('beheer.concerten.edit', concert.id)" class="text-blue-600 hover:text-blue-900 font-medium text-sm">
-                                        Bewerken
-                                    </Link>
-                                    <button @click="destroy(concert)" class="text-red-600 hover:text-red-900 font-medium text-sm">
-                                        Verwijderen
-                                    </button>
+                                <td class="px-10 py-8 text-right">
+                                    <div class="flex items-center justify-end gap-6">
+                                        <Link :href="route('beheer.concerten.edit', concert.id)" class="text-blue-600 hover:text-black font-black text-[10px] uppercase tracking-widest transition-colors">
+                                            Aanpassen
+                                        </Link>
+                                        <button @click="destroy(concert)" class="text-red-300 hover:text-red-600 font-black text-[10px] uppercase tracking-widest transition-colors">
+                                            Verwijder
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <tr v-if="!concerts.data.length">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                                    <svg class="w-12 h-12 mx-auto mb-2 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Nog geen concerten toegevoegd.
+                                <td colspan="4" class="px-10 py-24 text-center">
+                                    <p class="font-black text-gray-300 italic">Geen concerten in de database.</p>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Helper Card -->
-                <div class="mt-8">
-                    <TipsCard>
-                        <div class="space-y-1">
-                            <div>Klik '🎯 Huidig' om aan te geven welk concert volgende is — muzikanten zien dit prominent</div>
-                            <div>Klik 'Bewerken' om stukken aan het concert toe te voegen</div>
-                            <div>Voeg altijd een datum in zodat muzikanten weten wanneer het concert is</div>
-                            <div>Muzikanten kunnen hun partijen voor het huidige concert downloaden op hun dashboard</div>
-                        </div>
-                    </TipsCard>
-                </div>
-
-                <div class="mt-8">
-                    <Link :href="route('beheer.dashboard')" class="text-blue-600 hover:text-blue-900 text-sm font-semibold">
-                        ← Terug naar dashboard
+                <div class="mt-20 text-center">
+                    <Link :href="route('beheer.dashboard')" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-blue-950 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Terug naar Dashboard
                     </Link>
                 </div>
+
             </div>
         </div>
     </AuthenticatedLayout>

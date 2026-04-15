@@ -2,8 +2,6 @@
 import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import SectionHeader from '@/Components/Dashboard/SectionHeader.vue';
-import TipsCard from '@/Components/Dashboard/TipsCard.vue';
 
 const props = defineProps({
     scores: Array,
@@ -16,22 +14,13 @@ const search = ref('');
 const selectedInstrumentId = ref(props.primaryInstrument?.id || null);
 const expandedScores = ref(new Set());
 
-const currentInstrument = computed(() => {
-    if (!selectedInstrumentId.value) return null;
-    return props.userInstruments?.find(inst => inst.id === selectedInstrumentId.value);
-});
-
 const filteredScores = computed(() => {
-    let filtered = props.scores;
-
-    // Filter by selected instrument
+    let filtered = props.scores || [];
     if (selectedInstrumentId.value) {
         filtered = filtered.filter(score =>
             score.parts.some(p => p.instrument_id === selectedInstrumentId.value)
         );
     }
-
-    // Apply search
     if (!search.value) return filtered;
     const q = search.value.toLowerCase();
     return filtered.filter(score =>
@@ -52,193 +41,143 @@ function toggleScore(id) {
 
 function getPartDisplayName(part) {
     const baseName = part.instrument?.name || part.instrument;
-    return part.part_number && part.part_number > 1 
+    return (part.part_number && part.part_number > 1) 
         ? `${baseName} ${part.part_number}`
         : baseName;
 }
+
+const getDownloadUrl = (scoreId, partId) => route('muziek.download', { score: scoreId, part: partId });
+const isUserPart = (part) => selectedInstrumentId.value && part.instrument_id === selectedInstrumentId.value;
+
+const getSortedParts = (parts) => {
+    if (!selectedInstrumentId.value) return parts;
+    const items = [...parts];
+    return items.sort((a, b) => {
+        if (isUserPart(a)) return -1;
+        if (isUserPart(b)) return 1;
+        return 0;
+    });
+};
 </script>
 
 <template>
-    <Head title="Alle stukken" />
-
     <AuthenticatedLayout>
+        <Head :title="__('Muziekotheek')" />
+
         <template #header>
-            <div class="flex flex-col gap-1">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Alle stukken</h2>
-                <p class="text-sm text-gray-600">Bekijk alle beschikbare stukken en download je partijen</p>
+            <div class="flex flex-col gap-1 text-left">
+                <h2 class="text-xl font-black leading-tight text-blue-950 italic">{{ __('Bibliotheek') }}</h2>
+                <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] leading-none">{{ __('Bladmuziek en partijen') }}</p>
             </div>
         </template>
 
-        <div class="py-8">
+        <div class="py-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <!-- Section header -->
-                <SectionHeader 
-                    title="Alle stukken"
-                    subtitle="Bekijk alle beschikbare stukken en download je partijen"
-                />
-
-                <!-- Intro Card -->
-                <TipsCard>
-                    Hier vind je alle muziekstukken van je orkest. Selecteer je instrument(en) hieronder en je ziet alleen de relevante partijen. Je kunt je partijen rechtstreeks hier downloaden, of via je persoonlijke dashboard.
-                </TipsCard>
-
-                <!-- Instrument Selector -->
-                <div v-if="userInstruments && userInstruments.length > 0" class="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-                    <label class="text-sm font-semibold text-gray-700 block mb-3">Mijn instrumenten</label>
-                    <div class="flex flex-wrap gap-2">
-                        <button
-                            v-for="instrument in userInstruments"
-                            :key="instrument.id"
-                            @click="selectedInstrumentId = instrument.id"
-                            :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-all',
-                                selectedInstrumentId === instrument.id
-                                    ? 'bg-blue-900 text-white'
-                                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                            ]"
-                        >
-                            {{ instrument.name }}
-                        </button>
-                    </div>
+                <div class="mb-12 text-left">
+                    <h1 class="text-5xl font-black text-blue-950 mb-3 italic">{{ __('Repertoire') }}</h1>
+                    <p class="text-gray-500 font-bold">{{ __('Vind je partijen voor de harmonie.') }}</p>
                 </div>
 
-                <!-- Current Concert -->
-                <div v-if="currentConcert" class="mb-10 bg-blue-900 rounded-2xl p-8 text-white">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="bg-yellow-500 text-blue-900 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-                            Huidig concert
-                        </span>
-                    </div>
-                    <h2 class="text-2xl font-bold mb-1">{{ currentConcert.title }}</h2>
-                    <p class="text-blue-200 text-sm mb-6">
-                        {{ new Date(currentConcert.date).toLocaleDateString('nl-NL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
-                        <span v-if="currentConcert.location"> &bull; {{ currentConcert.location }}</span>
-                    </p>
-
-                    <h3 class="text-yellow-500 font-semibold mb-4">Stukken voor dit concert</h3>
-                    <div v-if="currentConcert.scores && currentConcert.scores.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div
-                            v-for="score in currentConcert.scores"
-                            :key="score.id"
-                            class="bg-blue-800 rounded-xl p-4"
-                        >
-                            <div class="font-semibold text-white">{{ score.title }}</div>
-                            <div class="text-blue-300 text-sm">{{ score.composer }}</div>
-                            <div v-if="score.parts && score.parts.length" class="mt-3 flex flex-wrap gap-2">
-                                <!-- Prioritize user's selected instrument if available -->
-                                <a
-                                    v-if="selectedInstrumentId && score.parts.find(p => p.instrument_id === selectedInstrumentId)"
-                                    :key="score.parts.find(p => p.instrument_id === selectedInstrumentId).id"
-                                    :href="route('muziek.download', { score: score.id, part: score.parts.find(p => p.instrument_id === selectedInstrumentId).id })"
-                                    class="inline-flex items-center gap-1 bg-yellow-500 text-blue-900 text-xs font-semibold px-2 py-1 rounded hover:bg-yellow-400 transition-colors border-2 border-yellow-600"
-                                >
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    {{ getPartDisplayName(score.parts.find(p => p.instrument_id === selectedInstrumentId)) }} ★
-                                </a>
-                                <!-- Show other parts -->
-                                <a
-                                    v-for="part in score.parts.filter(p => !selectedInstrumentId || p.instrument_id !== selectedInstrumentId)"
-                                    :key="part.id"
-                                    :href="route('muziek.download', { score: score.id, part: part.id })"
-                                    class="inline-flex items-center gap-1 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded hover:bg-blue-700 transition-colors"
-                                >
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    {{ getPartDisplayName(part) }}
-                                </a>
-                            </div>
-                            <div v-else class="text-blue-400 text-xs mt-2">Geen parts beschikbaar</div>
-                        </div>
-                    </div>
-                    <div v-else class="text-blue-300">Nog geen stukken gekoppeld aan dit concert.</div>
-                </div>
-
-                <!-- All Scores -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                        <h2 class="text-xl font-bold text-blue-900">Alle stukken</h2>
-                        <div class="relative">
-                            <input
-                                v-model="search"
-                                type="text"
-                                placeholder="Zoek op titel, componist of instrument..."
-                                class="w-full sm:w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div v-if="filteredScores.length === 0" class="text-center py-12 text-gray-400">
-                        Geen stukken gevonden.
-                    </div>
-
-                    <div class="space-y-3">
-                        <div
-                            v-for="score in filteredScores"
-                            :key="score.id"
-                            class="border border-gray-200 rounded-xl overflow-hidden"
-                        >
-                            <button
-                                @click="toggleScore(score.id)"
-                                class="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+                    <div class="lg:col-span-2 bg-white rounded-[2.5rem] border border-gray-100 p-8 text-left">
+                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Mijn Instrument') }}</span>
+                        <div class="flex flex-wrap gap-2">
+                             <button
+                                @click="selectedInstrumentId = null"
+                                :class="[
+                                    'px-6 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 border-2',
+                                    selectedInstrumentId === null
+                                        ? 'bg-blue-950 border-blue-950 text-white shadow-xl shadow-blue-900/20'
+                                        : 'bg-white border-gray-50 text-gray-400 hover:border-blue-200 hover:text-blue-950'
+                                ]"
                             >
-                                <div class="flex items-center gap-4">
-                                    <div>
-                                        <div class="font-semibold text-gray-900">{{ score.title }}</div>
-                                        <div class="text-sm text-gray-500">
-                                            {{ score.composer }}
-                                            <span v-if="score.arranger" class="text-gray-400"> &bull; arr. {{ score.arranger }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs text-gray-400">{{ score.parts.length }} part(s)</span>
-                                    <svg
-                                        class="h-5 w-5 text-gray-400 transition-transform duration-200"
-                                        :class="{ 'rotate-180': expandedScores.has(score.id) }"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
+                                {{ __('Alle instrumenten') }}
                             </button>
+                            <button
+                                v-for="inst in userInstruments"
+                                :key="inst.id"
+                                @click="selectedInstrumentId = inst.id"
+                                :class="[
+                                    'px-6 py-3 rounded-2xl text-xs font-black transition-all active:scale-95 border-2',
+                                    selectedInstrumentId === inst.id
+                                        ? 'bg-blue-950 border-blue-950 text-white shadow-xl shadow-blue-900/20'
+                                        : 'bg-white border-gray-50 text-gray-400 hover:border-blue-200 hover:text-blue-950'
+                                ]"
+                            >
+                                {{ inst.name }}
+                            </button>
+                        </div>
+                    </div>
 
-                            <div v-if="expandedScores.has(score.id)" class="px-5 pb-4 bg-gray-50">
-                                <div v-if="score.parts.length" class="flex flex-wrap gap-2 pt-3">
-                                    <!-- Prioritize user's selected instrument if available -->
-                                    <a
-                                        v-if="selectedInstrumentId && score.parts.find(p => p.instrument_id === selectedInstrumentId)"
-                                        :key="score.parts.find(p => p.instrument_id === selectedInstrumentId).id"
-                                        :href="route('muziek.download', { score: score.id, part: score.parts.find(p => p.instrument_id === selectedInstrumentId).id })"
-                                        class="inline-flex items-center gap-2 bg-yellow-500 text-blue-900 font-semibold text-sm px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors border-2 border-yellow-600"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        {{ getPartDisplayName(score.parts.find(p => p.instrument_id === selectedInstrumentId)) }} ★
-                                    </a>
-                                    <!-- Show other parts -->
-                                    <a
-                                        v-for="part in score.parts.filter(p => !selectedInstrumentId || p.instrument_id !== selectedInstrumentId)"
-                                        :key="part.id"
-                                        :href="route('muziek.download', { score: score.id, part: part.id })"
-                                        class="inline-flex items-center gap-2 bg-blue-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-800 transition-colors"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        {{ getPartDisplayName(part) }}
-                                    </a>
+                    <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 text-left">
+                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Zoekopdracht') }}</span>
+                        <input
+                            v-model="search"
+                            type="text"
+                            :placeholder="__('Titel...')"
+                            class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 placeholder:text-gray-300 focus:ring-2 focus:ring-yellow-400"
+                        />
+                    </div>
+                </div>
+
+                <div v-if="currentConcert" class="mb-20 bg-blue-950 rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden text-left">
+                    <div class="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
+                        <svg class="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                    </div>
+
+                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div>
+                            <span class="inline-block bg-yellow-400 text-blue-950 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">{{ __('Agenda') }}</span>
+                            <h2 class="text-5xl font-black mb-4 italic leading-tight">{{ currentConcert.title }}</h2>
+                        </div>
+
+                        <div v-if="currentConcert.scores && currentConcert.scores.length > 0" class="space-y-3">
+                            <div v-for="sc in currentConcert.scores" :key="'conc-'+sc.id" class="flex items-center justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/5">
+                                <div class="text-left">
+                                    <div class="font-black text-white leading-tight">{{ sc.title }}</div>
+                                    <div class="text-[10px] font-black uppercase tracking-widest text-blue-400/60 mt-0.5">{{ sc.composer }}</div>
                                 </div>
-                                <div v-else class="pt-3 text-sm text-gray-400">
-                                    Nog geen parts beschikbaar voor dit stuk.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div v-if="filteredScores.length === 0" class="py-24 text-center bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
+                        <p class="text-gray-300 font-black italic">{{ __('Geen resultaten.') }}</p>
+                    </div>
+
+                    <div v-for="score in filteredScores" :key="score.id" class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden group hover:border-blue-200 transition-all">
+                        <button @click="toggleScore(score.id)" class="w-full flex items-center justify-between p-10 text-left">
+                            <div class="flex items-center gap-6 text-left">
+                                <div class="hidden sm:flex w-14 h-14 bg-gray-50 rounded-2xl items-center justify-center text-gray-300 group-hover:bg-blue-950 group-hover:text-white transition-all">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                 </div>
+                                <div class="text-left">
+                                    <div class="text-2xl font-black text-blue-950 italic">{{ score.title }}</div>
+                                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{{ score.composer }}</div>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center transition-all" :class="{'bg-blue-950 text-white rotate-180': expandedScores.has(score.id)}">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </button>
+
+                        <div v-if="expandedScores.has(score.id)" class="px-10 pb-10 border-t border-gray-50 bg-gray-50/30">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-10 text-left">
+                                <a 
+                                    v-for="part in getSortedParts(score.parts)"
+                                    :key="'part-'+part.id"
+                                    :href="getDownloadUrl(score.id, part.id)"
+                                    class="flex items-center justify-between p-5 rounded-2xl transition-all active:scale-95"
+                                    :class="isUserPart(part) ? 'bg-yellow-400 shadow-lg shadow-yellow-400/20' : 'bg-white border border-gray-100 hover:border-blue-200'"
+                                >
+                                    <span class="text-[11px] font-black uppercase tracking-widest" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-500'">
+                                        {{ getPartDisplayName(part) }} {{ isUserPart(part) ? '★' : '' }}
+                                    </span>
+                                    <svg class="w-5 h-5" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                </a>
                             </div>
                         </div>
                     </div>
