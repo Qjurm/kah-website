@@ -1,14 +1,31 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PdfPreviewModal from '@/Components/PdfPreviewModal.vue';
 
-defineProps({
+const props = defineProps({
     primaryInstrument: Object,
     nextConcert: Object,
     myParts: Array,
     recentStats: Object,
     allInstruments: Array,
 });
+
+const previewUrl = ref('');
+const previewTitle = ref('');
+const showPreview = ref(false);
+
+function openPreview(part) {
+    previewUrl.value = route('muziek.view', { score: part.score_id, part: part.part_id });
+    previewTitle.value = `${part.score_title} - ${part.instrument}`;
+    showPreview.value = true;
+}
+
+function closePreview() {
+    showPreview.value = false;
+    previewUrl.value = '';
+}
 
 function formatDate(date) {
     if (!date) return '-';
@@ -159,15 +176,33 @@ function getDaysUntil(date) {
                         </div>
 
                         <div v-if="myParts.length === 0" class="flex-1 flex flex-col items-center justify-center py-10 opacity-30 italic">
-                            <p class="font-black text-gray-400">{{ __('Nog geen partijen.') }}</p>
+                            <p class="font-black text-gray-400">{{ __('Geen partijen voor jou in dit concert.') }}</p>
                         </div>
 
                         <div v-else class="space-y-4 mb-8">
-                            <div v-for="part in myParts" :key="part.part_id" class="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all active:scale-95 group">
-                                <Link :href="route('muziek.download', { score: part.score_id, part: part.part_id })" class="block">
-                                    <div class="font-black text-blue-950 text-base leading-tight mb-1 group-hover:text-blue-600 transition-colors">{{ part.score_title }}</div>
-                                    <div class="text-gray-400 text-[9px] font-black uppercase tracking-widest">{{ part.score_composer }}</div>
-                                </Link>
+                            <div v-for="part in myParts" :key="part.part_id" class="p-5 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all shadow-sm flex items-center justify-between group">
+                                <div class="min-w-0 mr-4">
+                                    <div class="font-black text-blue-950 text-sm leading-tight mb-1 truncate italic">{{ part.score_title }}</div>
+                                    <div class="text-[9px] font-black uppercase tracking-widest text-blue-300">
+                                        {{ part.instrument }} <span v-if="part.part_number && part.part_number > 1">({{ part.part_number }})</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <button 
+                                        @click="openPreview(part)"
+                                        class="p-3 bg-white text-blue-400 rounded-xl shadow-sm hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
+                                        :title="__('Bekijk partij')"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    </button>
+                                    <a 
+                                        :href="route('muziek.download', { score: part.score_id, part: part.part_id })"
+                                        class="p-3 bg-white text-gray-400 rounded-xl shadow-sm hover:text-blue-600 hover:shadow-md transition-all active:scale-90"
+                                        :title="__('Download partij')"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -183,5 +218,12 @@ function getDaysUntil(date) {
 
             </div>
         </div>
+
+        <PdfPreviewModal 
+            :show="showPreview" 
+            :url="previewUrl" 
+            :title="previewTitle" 
+            @close="closePreview" 
+        />
     </AuthenticatedLayout>
 </template>

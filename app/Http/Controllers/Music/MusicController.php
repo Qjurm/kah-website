@@ -27,10 +27,23 @@ class MusicController extends Controller
 
         $userInstruments = $user ? $user->instruments()->orderBy('display_order')->get() : [];
         $primaryInstrument = $user ? $user->primaryInstrument() : null;
+        
+        $myRelevantParts = [];
+        if ($currentConcert && $user) {
+            $instrumentIds = $userInstruments->pluck('id')->toArray();
+            foreach ($currentConcert->scores as $score) {
+                foreach ($score->parts as $part) {
+                    if (in_array($part->instrument_id, $instrumentIds)) {
+                        $myRelevantParts[$score->id][] = $part;
+                    }
+                }
+            }
+        }
 
         return Inertia::render('Muziek/Index', [
             'scores' => $scores,
             'currentConcert' => $currentConcert,
+            'myRelevantParts' => $myRelevantParts,
             'userInstruments' => $userInstruments,
             'primaryInstrument' => $primaryInstrument,
         ]);
