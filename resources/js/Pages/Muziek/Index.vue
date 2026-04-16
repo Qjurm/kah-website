@@ -108,9 +108,109 @@ function formatDate(date) {
                     <p class="text-gray-500 font-bold">{{ __('Vind je partijen voor de harmonie.') }}</p>
                 </div>
 
+                <div v-if="currentConcert" class="mb-20 bg-blue-950 rounded-[3rem] p-10 sm:p-12 text-white shadow-2xl relative overflow-hidden text-left">
+                    <div class="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
+                        <svg class="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                    </div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+                            <div>
+                                <span class="inline-block bg-yellow-400 text-blue-950 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">{{ __('Volgend Optreden') }}</span>
+                                <h1 class="text-4xl sm:text-5xl font-black italic leading-tight uppercase tracking-tight">{{ currentConcert.title }}</h1>
+                                <p class="text-blue-300 text-xs font-black uppercase tracking-[0.2em] mt-3 opacity-60">{{ formatDate(currentConcert.date) }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Adaptive View: Grid for few items, Compact List for many -->
+                        <div v-if="currentConcert.scores.length <= 6" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="score in currentConcert.scores" :key="'cc-'+score.id" 
+                                class="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 hover:bg-white/10 transition-all group flex flex-col"
+                            >
+                                <div class="mb-6">
+                                    <h3 class="font-black text-white text-xl leading-tight mb-2 italic">{{ score.title }}</h3>
+                                    <p class="text-blue-400/60 text-[10px] font-black uppercase tracking-widest">{{ score.composer }}</p>
+                                </div>
+                                
+                                <div v-if="myRelevantParts[score.id]" class="mt-auto space-y-3">
+                                    <div v-for="part in myRelevantParts[score.id]" :key="'rel-'+part.id" 
+                                        class="flex items-center justify-between bg-white/5 rounded-2xl px-5 py-4 border border-white/5"
+                                    >
+                                        <div class="min-w-0 mr-3">
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-100 truncate block leading-tight">
+                                                {{ getPartDisplayName(part) }}
+                                            </span>
+                                            <span v-if="part.original_filename" class="text-[8px] font-bold text-blue-300/40 truncate block max-w-[120px]">
+                                                {{ part.original_filename }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <button 
+                                                @click="openPreview(score, part)"
+                                                class="p-3 bg-yellow-400 text-blue-950 rounded-xl hover:bg-yellow-300 transition-all active:scale-90 shadow-lg shadow-yellow-400/10"
+                                                :title="__('Bekijk partij')"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            </button>
+                                            <a 
+                                                :href="getDownloadUrl(score.id, part.id)"
+                                                class="p-3 bg-white text-blue-950 rounded-xl hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
+                                                :title="__('Download partij')"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="mt-auto pt-6 border-t border-white/5 flex items-center justify-center opacity-30 italic">
+                                    <span class="text-[9px] font-black uppercase tracking-widest">{{ __('Geen partij voor jou') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Compact List View for large repertoires -->
+                        <div v-else class="space-y-3">
+                            <div v-for="score in currentConcert.scores" :key="'cc-'+score.id" 
+                                class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all flex items-center justify-between gap-6"
+                            >
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-black text-white text-lg leading-tight italic truncate">{{ score.title }}</h3>
+                                    <p class="text-blue-400/60 text-[9px] font-black uppercase tracking-widest mt-0.5 truncate">{{ score.composer }}</p>
+                                </div>
+                                
+                                <div v-if="myRelevantParts[score.id]" class="flex items-center gap-3">
+                                    <div v-for="part in myRelevantParts[score.id]" :key="'rel-'+part.id" class="flex items-center gap-2">
+                                        <div class="hidden sm:flex flex-col text-right mr-3">
+                                            <div class="text-[9px] font-black uppercase tracking-widest text-blue-200 opacity-50">{{ getPartDisplayName(part) }}</div>
+                                            <div v-if="part.original_filename" class="text-[7px] font-bold text-blue-100/20 truncate max-w-[100px]">{{ part.original_filename }}</div>
+                                        </div>
+                                        <button 
+                                            @click="openPreview(score, part)"
+                                            class="p-3 bg-yellow-400 text-blue-950 rounded-xl hover:bg-yellow-300 transition-all active:scale-90 shadow-lg shadow-yellow-400/10"
+                                            :title="__('Bekijk')"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        </button>
+                                        <a 
+                                            :href="getDownloadUrl(score.id, part.id)"
+                                            class="p-3 bg-white text-blue-950 rounded-xl hover:bg-blue-50 transition-all active:scale-90"
+                                            :title="__('Download')"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div v-else class="opacity-30 italic text-[9px] font-black uppercase tracking-widest hidden md:block">
+                                    {{ __('Geen partij') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
                     <div class="lg:col-span-2 bg-white rounded-[2.5rem] border border-gray-100 p-8 text-left">
-                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Mijn Instrument') }}</span>
+                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Sorteer op instrument') }}</span>
                         <div class="flex flex-wrap gap-2">
                              <button
                                 @click="selectedInstrumentId = null"
@@ -139,72 +239,14 @@ function formatDate(date) {
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 text-left">
-                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Zoekopdracht') }}</span>
+                    <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 text-left text-blue-950">
+                        <span class="block text-[10px] font-black uppercase tracking-widest text-blue-950/40 mb-4">{{ __('Zoeken in bibliotheek') }}</span>
                         <input
                             v-model="search"
                             type="text"
-                            :placeholder="__('Titel...')"
+                            :placeholder="__('Titel, componist...')"
                             class="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-xs font-black text-blue-950 placeholder:text-gray-300 focus:ring-2 focus:ring-yellow-400"
                         />
-                    </div>
-                </div>
-
-                <div v-if="currentConcert" class="mb-20 bg-blue-950 rounded-[3rem] p-10 sm:p-12 text-white shadow-2xl relative overflow-hidden text-left">
-                    <div class="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
-                        <svg class="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-                    </div>
-                    
-                    <div class="relative z-10">
-                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
-                            <div>
-                                <span class="inline-block bg-yellow-400 text-blue-950 text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">{{ __('Volgend Optreden') }}</span>
-                                <h1 class="text-4xl sm:text-5xl font-black italic leading-tight uppercase tracking-tight">{{ currentConcert.title }}</h1>
-                                <p class="text-blue-300 text-xs font-black uppercase tracking-[0.2em] mt-3 opacity-60">{{ formatDate(currentConcert.date) }}</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div v-for="score in currentConcert.scores" :key="'cc-'+score.id" 
-                                class="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 hover:bg-white/10 transition-all group flex flex-col"
-                            >
-                                <div class="mb-6">
-                                    <h3 class="font-black text-white text-xl leading-tight mb-2 italic">{{ score.title }}</h3>
-                                    <p class="text-blue-400/60 text-[10px] font-black uppercase tracking-widest">{{ score.composer }}</p>
-                                </div>
-                                
-                                <div v-if="myRelevantParts[score.id]" class="mt-auto space-y-3">
-                                    <div v-for="part in myRelevantParts[score.id]" :key="'rel-'+part.id" 
-                                        class="flex items-center justify-between bg-white/5 rounded-2xl px-5 py-4 border border-white/5"
-                                    >
-                                        <div class="min-w-0 mr-3">
-                                            <span class="text-[10px] font-black uppercase tracking-widest text-blue-100 truncate block">
-                                                {{ getPartDisplayName(part) }}
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center gap-2 flex-shrink-0">
-                                            <button 
-                                                @click="openPreview(score, part)"
-                                                class="p-2.5 bg-yellow-400 text-blue-950 rounded-xl hover:bg-yellow-300 transition-all active:scale-90 shadow-lg shadow-yellow-400/10"
-                                                :title="__('Bekijk partij')"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                            </button>
-                                            <a 
-                                                :href="getDownloadUrl(score.id, part.id)"
-                                                class="p-2.5 bg-white text-blue-950 rounded-xl hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                                :title="__('Download partij')"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-else class="mt-auto pt-6 border-t border-white/5 flex items-center justify-center opacity-30 italic">
-                                    <span class="text-[9px] font-black uppercase tracking-widest">{{ __('Geen partij voor jou') }}</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 

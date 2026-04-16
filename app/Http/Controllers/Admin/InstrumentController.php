@@ -34,6 +34,7 @@ class InstrumentController extends Controller
                 ]),
                 'repertoire' => $instrument->parts->map(fn ($p) => [
                     'id' => $p->id,
+                    'score_id' => $p->score_id,
                     'title' => $p->score?->title ?? 'Onbekend',
                 ])->unique('title')->values(),
             ])

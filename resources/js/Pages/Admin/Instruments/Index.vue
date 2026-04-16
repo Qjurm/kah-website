@@ -113,9 +113,9 @@ function deleteInstrument(id) {
                                             <span class="text-xs font-bold uppercase tracking-widest text-blue-900/40">
                                                 {{ instrument.users_count }} {{ instrument.users_count === 1 ? 'Lid' : 'Leden' }}
                                             </span>
-                                            <span class="text-xs font-bold uppercase tracking-widest text-blue-900/40">
+                                            <Link :href="route('beheer.bladmuziek.index', { instrument: instrument.id })" class="text-xs font-bold uppercase tracking-widest text-blue-900/40 hover:text-blue-600 transition-colors underline decoration-dotted">
                                                 {{ instrument.parts_count }} {{ instrument.parts_count === 1 ? 'Partij' : 'Partijen' }}
-                                            </span>
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>
@@ -164,16 +164,18 @@ function deleteInstrument(id) {
                                 <div class="space-y-4 pt-6">
                                     <h5 class="text-xs font-black uppercase tracking-[0.2em] text-blue-900/40 border-b border-blue-950/5 pb-2">Repertoire</h5>
                                     <div class="space-y-2" v-if="instrument.repertoire.length">
-                                        <div 
+                                        <Link 
                                             v-for="piece in instrument.repertoire" 
                                             :key="piece.id"
-                                            class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-950/5"
+                                            :href="route('beheer.bladmuziek.edit', piece.score_id)"
+                                            class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-950/5 hover:border-yellow-400 hover:scale-[1.02] transition-all group"
                                         >
                                             <div class="w-8 h-8 rounded-lg bg-yellow-400/10 flex items-center justify-center text-yellow-600">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                             </div>
-                                            <span class="font-bold text-sm text-blue-950">{{ piece.title }}</span>
-                                        </div>
+                                            <span class="font-bold text-sm text-blue-950 group-hover:text-blue-700 transition-colors">{{ piece.title }}</span>
+                                            <svg class="w-4 h-4 ml-auto text-blue-950/20 group-hover:text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                        </Link>
                                     </div>
                                     <p v-else class="text-sm italic text-blue-950/40 py-2">Geen bladmuziek gevonden.</p>
                                 </div>

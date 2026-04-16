@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
 const props = defineProps({
@@ -13,6 +14,36 @@ const props = defineProps({
 const form = useForm({
     instrument_ids: props.userInstruments,
     primary_instrument_id: props.primaryInstrumentId,
+});
+
+const instrumentFamilies = [
+    { name: 'Hout', keywords: ['fluit', 'piccolo', 'hobo', 'fagot', 'klarinet', 'saxofoon'] },
+    { name: 'Koper', keywords: ['trompet', 'hoorn', 'trombone', 'euphonium', 'tuba', 'cornet', 'bugel'] },
+    { name: 'Slagwerk', keywords: ['pauken', 'percussie', 'slagwerk', 'mallets', 'drums'] },
+];
+
+const groupedInstruments = computed(() => {
+    const groups = {
+        'Hout': [],
+        'Koper': [],
+        'Slagwerk': [],
+        'Overig': []
+    };
+
+    props.allInstruments.forEach(inst => {
+        const name = inst.name.toLowerCase();
+        let found = false;
+        for (const family of instrumentFamilies) {
+            if (family.keywords.some(k => name.includes(k))) {
+                groups[family.name].push(inst);
+                found = true;
+                break;
+            }
+        }
+        if (!found) groups['Overig'].push(inst);
+    });
+
+    return groups;
 });
 
 function toggleInstrument(id) {
@@ -69,34 +100,47 @@ function submit() {
                     <div class="lg:col-span-3 space-y-10 text-left">
                         <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm">
                             <h3 class="text-lg font-black text-blue-950 italic mb-8">{{ __('Kies je Instrumenten') }}</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div 
-                                    v-for="inst in allInstruments" 
-                                    :key="inst.id"
-                                    @click="toggleInstrument(inst.id)"
-                                    class="relative p-6 rounded-2xl border-2 transition-all cursor-pointer group active:scale-95"
-                                    :class="form.instrument_ids.includes(inst.id) 
-                                        ? 'bg-blue-950 border-blue-950 text-white shadow-xl shadow-blue-900/20' 
-                                        : 'bg-white border-gray-50 hover:border-blue-100'"
-                                >
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center transition-all" :class="form.instrument_ids.includes(inst.id) ? 'bg-yellow-400 text-blue-950' : 'bg-gray-100 text-gray-300'">
-                                            <svg v-if="form.instrument_ids.includes(inst.id)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                                            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12M6 12h12"/></svg>
+                            
+                            <div class="space-y-12">
+                                <div v-for="(instruments, family) in groupedInstruments" :key="family">
+                                    <div v-if="instruments.length > 0">
+                                        <div class="flex items-center gap-4 mb-6">
+                                            <div class="h-px bg-gray-100 flex-1"></div>
+                                            <span class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-300">{{ family }}</span>
+                                            <div class="h-px bg-gray-100 flex-1"></div>
                                         </div>
                                         
-                                        <button 
-                                            v-if="form.instrument_ids.includes(inst.id)"
-                                            @click.stop="setPrimary(inst.id)"
-                                            class="px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all"
-                                            :class="form.primary_instrument_id === inst.id 
-                                                ? 'bg-yellow-400 text-blue-950' 
-                                                : 'bg-white/10 text-white/40 hover:text-white hover:bg-white/20'"
-                                        >
-                                            {{ form.primary_instrument_id === inst.id ? __('Primair') : __('Maak Primair') }}
-                                        </button>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div 
+                                                v-for="inst in instruments" 
+                                                :key="inst.id"
+                                                @click="toggleInstrument(inst.id)"
+                                                class="relative p-6 rounded-2xl border-2 transition-all cursor-pointer group active:scale-95"
+                                                :class="form.instrument_ids.includes(inst.id) 
+                                                    ? 'bg-blue-950 border-blue-950 text-white shadow-xl shadow-blue-900/20' 
+                                                    : 'bg-white border-gray-50 hover:border-blue-100'"
+                                            >
+                                                <div class="flex items-center justify-between mb-4">
+                                                    <div class="w-8 h-8 rounded-full flex items-center justify-center transition-all" :class="form.instrument_ids.includes(inst.id) ? 'bg-yellow-400 text-blue-950' : 'bg-gray-100 text-gray-300'">
+                                                        <svg v-if="form.instrument_ids.includes(inst.id)" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6v12M6 12h12"/></svg>
+                                                    </div>
+                                                    
+                                                    <button 
+                                                        v-if="form.instrument_ids.includes(inst.id)"
+                                                        @click.stop="setPrimary(inst.id)"
+                                                        class="px-3 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all"
+                                                        :class="form.primary_instrument_id === inst.id 
+                                                            ? 'bg-yellow-400 text-blue-950' 
+                                                            : 'bg-white/10 text-white/40 hover:text-white hover:bg-white/20'"
+                                                    >
+                                                        {{ form.primary_instrument_id === inst.id ? __('Primair') : __('Maak Primair') }}
+                                                    </button>
+                                                </div>
+                                                <div class="font-black text-xs uppercase tracking-[0.15em] leading-tight">{{ inst.name }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="font-black text-xs uppercase tracking-[0.15em] leading-tight">{{ inst.name }}</div>
                                 </div>
                             </div>
                         </div>

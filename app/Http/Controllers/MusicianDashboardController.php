@@ -38,6 +38,7 @@ class MusicianDashboardController extends Controller
                         'score_composer' => $score->composer,
                         'part_id' => $myPart->id,
                         'part_number' => $myPart->part_number,
+                        'original_filename' => $myPart->original_filename,
                         'instrument' => $myPart->instrument?->name ?? $myPart->instrument,
                     ];
                 }

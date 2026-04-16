@@ -34,7 +34,13 @@ class MusicController extends Controller
             foreach ($currentConcert->scores as $score) {
                 foreach ($score->parts as $part) {
                     if (in_array($part->instrument_id, $instrumentIds)) {
-                        $myRelevantParts[$score->id][] = $part;
+                        $myRelevantParts[$score->id][] = [
+                            'id' => $part->id,
+                            'instrument_id' => $part->instrument_id,
+                            'instrument' => $part->instrument,
+                            'part_number' => $part->part_number,
+                            'original_filename' => $part->original_filename,
+                        ];
                     }
                 }
             }
