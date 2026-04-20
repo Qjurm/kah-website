@@ -26,6 +26,8 @@ Route::middleware(['auth', 'musician'])->group(function () {
     Route::get('/muziek', [MusicController::class, 'index'])->name('muziek.index');
     Route::get('/muziek/bladmuziek/{score}/partijen/{part}/download', [MusicController::class, 'download'])->name('muziek.download');
     Route::get('/muziek/bladmuziek/{score}/partijen/{part}/view', [MusicController::class, 'view'])->name('muziek.view');
+    Route::get('/muziek/bladmuziek/{score}/download-bulk', [MusicController::class, 'downloadBulkScore'])->name('muziek.download-bulk-score');
+    Route::get('/muziek/concert/{concert}/download-bulk', [MusicController::class, 'downloadBulkConcert'])->name('muziek.download-bulk-concert');
     
     // Redirect routes for dual-role users
     Route::get('/muziek-home', function () {

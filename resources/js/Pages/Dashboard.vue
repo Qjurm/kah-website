@@ -149,9 +149,14 @@ function getDaysUntil(date) {
                                 <div v-if="myParts.length" v-for="part in myParts" :key="part.part_id" class="group bg-white p-6 rounded-[2rem] border border-blue-950/5 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all hover:-translate-y-1">
                                     <div class="flex flex-col gap-4">
                                         <div class="min-w-0">
-                                            <span class="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-2 block">{{ part.instrument }}</span>
+                                            <span class="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-1 block leading-none">{{ part.instrument }}</span>
                                             <h5 class="text-lg font-black text-blue-950 italic uppercase tracking-tighter leading-tight mb-1 truncate">{{ part.score_title }}</h5>
-                                            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ part.score_composer }}</p>
+                                            <div class="flex items-center justify-between gap-4">
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest truncate">{{ part.score_composer }}</p>
+                                                <p v-if="part.original_filename" class="text-[8px] font-bold text-blue-300/40 truncate max-w-[150px] italic">
+                                                    {{ part.original_filename }}
+                                                </p>
+                                            </div>
                                         </div>
                                         <div class="flex items-center gap-2 pt-2">
                                             <button @click="openPreview(part)" class="flex-1 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all font-black text-[9px] uppercase tracking-widest shadow-sm">

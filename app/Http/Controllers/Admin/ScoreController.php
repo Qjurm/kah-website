@@ -159,13 +159,15 @@ class ScoreController extends Controller
             'composer'               => 'required|string|max:255',
             'arranger'               => 'nullable|string|max:255',
             'removed_part_ids'       => 'nullable|array',
-            'removed_part_ids.*'                 => 'integer|exists:score_parts,id',
+            'removed_part_ids.*'     => 'integer|exists:score_parts,id',
+            'existing_parts'                  => 'nullable|array',
+            'existing_parts.*.id'             => 'required|integer|exists:score_parts,id',
+            'existing_parts.*.instrument'     => 'required|string|max:255',
+            'existing_parts.*.pdf'            => 'nullable|file|mimes:pdf|max:20480',
             'new_parts'                          => 'nullable|array',
             'new_parts.*.instrument'             => 'required|string|max:255',
             'new_parts.*.original_parsed_instrument' => 'nullable|string|max:255',
             'new_parts.*.pdf'                    => 'nullable|file|mimes:pdf|max:20480',
-        ], [
-            'new_parts.*.instrument.required' => 'Kies een instrument voor elke bijgevoegde PDF.',
         ]);
 
         $score->update([
@@ -174,6 +176,7 @@ class ScoreController extends Controller
             'arranger' => $validated['arranger'] ?? null,
         ]);
 
+        // Process removals
         if (!empty($validated['removed_part_ids'])) {
             $partsToDelete = ScorePart::whereIn('id', $validated['removed_part_ids'])
                 ->where('score_id', $score->id)
@@ -183,6 +186,32 @@ class ScoreController extends Controller
                 Storage::disk($disk)->delete($part->pdf_path);
                 $part->delete();
             }
+        }
+
+        // Process updates for existing parts
+        foreach ($validated['existing_parts'] ?? [] as $i => $partData) {
+            $part = ScorePart::find($partData['id']);
+            if (!$part || $part->score_id !== $score->id) continue;
+
+            $updateData = [
+                'instrument' => $partData['instrument']
+            ];
+
+            // Match instrument_id
+            $foundInstrument = \App\Models\Instrument::where('name', $partData['instrument'])->first();
+            if ($foundInstrument) {
+                $updateData['instrument_id'] = $foundInstrument->id;
+            }
+
+            // PDF Replacement
+            $newPdf = $request->file("existing_parts.{$i}.pdf");
+            if ($newPdf) {
+                $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
+                Storage::disk($disk)->delete($part->pdf_path);
+                $updateData['pdf_path'] = $newPdf->store("scores/{$score->id}", $disk);
+            }
+
+            $part->update($updateData);
         }
 
         foreach ($validated['new_parts'] ?? [] as $i => $part) {
