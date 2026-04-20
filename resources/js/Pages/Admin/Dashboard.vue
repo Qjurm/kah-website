@@ -49,7 +49,7 @@ const hasUpcomingConcerts = computed(() => (props.upcomingConcerts?.length || 0)
                     <div class="mb-10 text-left">
                         <div class="relative overflow-hidden bg-blue-950 rounded-[2.5rem] p-10 text-white shadow-2xl">
                             <div class="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-                                <svg class="w-48 h-48" fill="white" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 0 00-2 2v12a2 0 002 2z" /></svg>
+                                <svg class="w-48 h-48" fill="white" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2z" /></svg>
                             </div>
                             
                             <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -87,7 +87,7 @@ const hasUpcomingConcerts = computed(() => (props.upcomingConcerts?.length || 0)
                     <div class="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
                         <div class="flex items-center gap-6 mb-10">
                             <div class="w-16 h-16 bg-yellow-400/10 rounded-2xl text-yellow-600 flex items-center justify-center shadow-inner group-hover:bg-yellow-400 group-hover:text-blue-950 transition-all">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 0 00-2 2v12a2 0 002 2z" /></svg>
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0 -2-2H5a2 0 0 0 -2 2v12a2 0 0 0 2 2z" /></svg>
                             </div>
                             <div>
                                 <div class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Projecten</div>

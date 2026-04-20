@@ -16,6 +16,24 @@ class UserInstrumentController extends Controller
         $user = Auth::user();
         $user->load('instruments');
         $allInstruments = Instrument::orderBy('display_order')->get();
+        $instrumentSections = \App\Models\InstrumentSection::with('instruments')->orderBy('display_order')->get();
+        $unsortedInstruments = Instrument::whereNull('section_id')->orderBy('display_order')->get();
+
+        if ($unsortedInstruments->isNotEmpty()) {
+            $overigSection = $instrumentSections->where('name', 'Overig')->first();
+            
+            if ($overigSection) {
+                // Merge with existing Overig section
+                $overigSection->setRelation('instruments', $overigSection->instruments->concat($unsortedInstruments));
+            } else {
+                // Create a virtual Overig section if it doesn't exist in DB
+                $instrumentSections->push((object)[
+                    'id' => 0,
+                    'name' => 'Overig',
+                    'instruments' => $unsortedInstruments
+                ]);
+            }
+        }
         
         // Get next concert
         $nextConcert = \App\Models\Concert::where('date', '>=', now())
@@ -46,6 +64,7 @@ class UserInstrumentController extends Controller
             'userInstruments' => $selectedIds,
             'primaryInstrumentId' => $user->instruments->where('pivot.is_primary', true)->first()?->id,
             'allInstruments' => $allInstruments,
+            'instrumentSections' => $instrumentSections,
             'nextConcert' => $nextConcert ? [
                 'id' => $nextConcert->id,
                 'title' => $nextConcert->title,

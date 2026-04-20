@@ -22,7 +22,15 @@ class ScoreController extends Controller
         $scores = Score::withCount('parts')->orderBy('title')->paginate(20);
 
         return Inertia::render('Admin/Scores/Index', [
-            'scores' => ScoreResource::collection($scores),
+            'scores' => $scores->through(fn ($score) => [
+                'id' => $score->id,
+                'title' => $score->title,
+                'composer' => $score->composer,
+                'arranger' => $score->arranger,
+                'parts_count' => $score->parts_count,
+                'created_at' => $score->created_at,
+                'updated_at' => $score->updated_at,
+            ]),
         ]);
     }
 
@@ -229,18 +237,9 @@ class ScoreController extends Controller
         return redirect()->route('beheer.bladmuziek.index')->with('success', 'Bladmuziek verwijderd.');
     }
 
-    public function download(Score $score, \App\Models\ScorePart $part)
+    public function download(Score $score, \App\Models\ScorePart $part, \App\Actions\DownloadScorePartAction $downloadAction)
     {
-        abort_if($part->score_id !== $score->id, 404);
-
-        $filename = $part->original_filename ? pathinfo($part->original_filename, PATHINFO_FILENAME) : ($score->title . ' - ' . ($part->instrument?->name ?? $part->instrument));
-        
-        if (!$part->original_filename && $part->part_number && $part->part_number > 1) {
-            $filename .= ' ' . $part->part_number;
-        }
-
-        $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
-        return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
+        return $downloadAction->execute($score, $part);
     }
 
     public function view(Score $score, \App\Models\ScorePart $part)

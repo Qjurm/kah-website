@@ -20,7 +20,7 @@ const instrumentsList = ref([...props.instruments]);
 const form = useForm({
     title: props.score.title,
     composer: props.score.composer,
-    arranger: props.score.arranger,
+    arranger: props.score.arranger || '',
     removed_part_ids: [],
     new_parts: [], 
 });
@@ -124,7 +124,8 @@ async function submit() {
     
     try {
         // Step 1: Update metadata & handle removals
-        await axios.put(route('beheer.bladmuziek.update', props.score.id), {
+        await axios.post(route('beheer.bladmuziek.update', props.score.id), {
+            _method: 'PUT',
             title: form.title,
             composer: form.composer,
             arranger: form.arranger,

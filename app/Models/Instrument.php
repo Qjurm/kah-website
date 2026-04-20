@@ -11,7 +11,12 @@ class Instrument extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'display_order'];
+    protected $fillable = ['name', 'section_id', 'display_order'];
+
+    public function section()
+    {
+        return $this->belongsTo(InstrumentSection::class, 'section_id');
+    }
 
     public function aliases(): HasMany
     {

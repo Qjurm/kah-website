@@ -55,17 +55,9 @@ class MusicController extends Controller
         ]);
     }
 
-    public function download(Score $score, ScorePart $part): StreamedResponse
+    public function download(Score $score, ScorePart $part, \App\Actions\DownloadScorePartAction $downloadAction): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        abort_if($part->score_id !== $score->id, 404);
-
-        $filename = $part->instrument?->name ?? $part->instrument;
-        if ($part->part_number && $part->part_number > 1) {
-            $filename .= ' ' . $part->part_number;
-        }
-
-        $disk = config('filesystems.scores.driver') === 'local' ? 'public' : 'scores';
-        return Storage::disk($disk)->download($part->pdf_path, $filename . '.pdf');
+        return $downloadAction->execute($score, $part);
     }
 
     public function view(Score $score, ScorePart $part)

@@ -7,6 +7,7 @@ const props = defineProps({
     userInstruments: Array,
     primaryInstrumentId: [Number, String],
     allInstruments: Array,
+    instrumentSections: Array,
     nextConcert: Object,
     myParts: Array,
 });
@@ -14,36 +15,6 @@ const props = defineProps({
 const form = useForm({
     instrument_ids: props.userInstruments,
     primary_instrument_id: props.primaryInstrumentId,
-});
-
-const instrumentFamilies = [
-    { name: 'Hout', keywords: ['fluit', 'piccolo', 'hobo', 'fagot', 'klarinet', 'saxofoon'] },
-    { name: 'Koper', keywords: ['trompet', 'hoorn', 'trombone', 'euphonium', 'tuba', 'cornet', 'bugel'] },
-    { name: 'Slagwerk', keywords: ['pauken', 'percussie', 'slagwerk', 'mallets', 'drums'] },
-];
-
-const groupedInstruments = computed(() => {
-    const groups = {
-        'Hout': [],
-        'Koper': [],
-        'Slagwerk': [],
-        'Overig': []
-    };
-
-    props.allInstruments.forEach(inst => {
-        const name = inst.name.toLowerCase();
-        let found = false;
-        for (const family of instrumentFamilies) {
-            if (family.keywords.some(k => name.includes(k))) {
-                groups[family.name].push(inst);
-                found = true;
-                break;
-            }
-        }
-        if (!found) groups['Overig'].push(inst);
-    });
-
-    return groups;
 });
 
 function toggleInstrument(id) {
@@ -96,23 +67,23 @@ function submit() {
                 
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
                     
-                    <!-- Left: Instrument Selection (Larger) -->
-                    <div class="lg:col-span-3 space-y-10 text-left">
+                    <!-- Left: Instrument Selection -->
+                    <div :class="[myParts.length > 0 ? 'lg:col-span-3' : 'lg:col-span-5', 'space-y-10 text-left transition-all duration-500']">
                         <div class="bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm">
                             <h3 class="text-lg font-black text-blue-950 italic mb-8">{{ __('Kies je Instrumenten') }}</h3>
                             
                             <div class="space-y-12">
-                                <div v-for="(instruments, family) in groupedInstruments" :key="family">
-                                    <div v-if="instruments.length > 0">
+                                <div v-for="section in instrumentSections" :key="section.id">
+                                    <div v-if="section.instruments && section.instruments.length > 0">
                                         <div class="flex items-center gap-4 mb-6">
                                             <div class="h-px bg-gray-100 flex-1"></div>
-                                            <span class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-300">{{ family }}</span>
+                                            <span class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-300">{{ section.name }}</span>
                                             <div class="h-px bg-gray-100 flex-1"></div>
                                         </div>
                                         
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div :class="['grid gap-6', myParts.length > 0 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4']">
                                             <div 
-                                                v-for="inst in instruments" 
+                                                v-for="inst in section.instruments" 
                                                 :key="inst.id"
                                                 @click="toggleInstrument(inst.id)"
                                                 class="relative p-6 rounded-2xl border-2 transition-all cursor-pointer group active:scale-95"
@@ -146,8 +117,8 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Right: Repertoire Preview (Smaller/Sidebar) -->
-                    <div class="lg:col-span-2 space-y-10 text-left">
+                    <!-- Right: Repertoire Preview -->
+                    <div v-if="myParts.length > 0" class="lg:col-span-2 space-y-10 text-left">
                         <div v-if="nextConcert" class="bg-blue-50 rounded-[2.5rem] p-10 border border-blue-100 h-full">
                             <div class="flex items-center gap-4 mb-8">
                                 <div class="w-10 h-10 bg-blue-950 rounded-2xl text-white flex items-center justify-center shadow-lg">
@@ -159,17 +130,33 @@ function submit() {
                                 </div>
                             </div>
 
-                        <div v-if="myParts.length > 0" class="space-y-4">
-                                <div v-for="part in myParts" :key="part.part_id" class="p-6 bg-white rounded-2xl border border-blue-100 shadow-sm">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-blue-50 text-blue-600">{{ part.instrument }}</span>
+                            <div class="space-y-4">
+                                <div v-for="part in myParts" :key="part.part_id" class="p-6 bg-white rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between group">
+                                    <div class="min-w-0 mr-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-blue-50 text-blue-600">{{ part.instrument }}</span>
+                                        </div>
+                                        <div class="font-black text-blue-950 italic leading-tight text-sm truncate">{{ part.score_title }}</div>
+                                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1 truncate">{{ part.score_composer }}</div>
                                     </div>
-                                    <div class="font-black text-blue-950 italic leading-tight text-sm">{{ part.score_title }}</div>
-                                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{{ part.score_composer }}</div>
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <a 
+                                            :href="route('muziek.view', { score: part.score_id, part: part.part_id })" 
+                                            target="_blank"
+                                            class="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                            title="Bekijk PDF"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 1 1 -6 0 3 3 0 0 1 6 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                        </a>
+                                        <a 
+                                            :href="route('muziek.download', { score: part.score_id, part: part.part_id })"
+                                            class="p-3 bg-blue-950 text-white rounded-xl hover:bg-black transition-all shadow-lg shadow-blue-950/10"
+                                            title="Download PDF"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div v-else class="py-20 text-center opacity-30 italic">
-                                <p class="font-black text-blue-900">{{ __('Kies een instrument om de partijen voor het volgende concert te zien.') }}</p>
                             </div>
                         </div>
                     </div>

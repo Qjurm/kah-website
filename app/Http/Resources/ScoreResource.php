@@ -15,6 +15,7 @@ class ScoreResource extends JsonResource
             'arranger' => $this->arranger,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'parts_count' => $this->parts_count,
             'parts' => ScorePartResource::collection($this->whenLoaded('parts')),
         ];
     }

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ScorePartController;
 use App\Http\Controllers\Admin\ConcertController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\InstrumentController;
+use App\Http\Controllers\Admin\InstrumentSectionController;
 use Illuminate\Support\Facades\Route;
 
 // Public
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'admin'])->prefix('beheer')->name('beheer.')->group(f
     Route::delete('partijen/{part}', [ScorePartController::class, 'destroy'])->name('partijen.destroy');
     Route::resource('concerten', ConcertController::class)->parameters(['concerten' => 'concert']);
     Route::resource('instrumenten', InstrumentController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['instrumenten' => 'instrument']);
+    Route::resource('instrumenten-secties', InstrumentSectionController::class)->parameters(['instrumenten-secties' => 'instrument_section']);
     Route::resource('gebruikers', UserController::class)->parameters(['gebruikers' => 'user']);
     Route::put('gebruikers/{user}/approve', [UserController::class, 'approve'])->name('gebruikers.approve');
     Route::delete('gebruikers/{user}', [UserController::class, 'destroy'])->name('gebruikers.destroy');
