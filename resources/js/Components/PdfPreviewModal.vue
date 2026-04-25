@@ -64,14 +64,28 @@ onUnmounted(() => {
                         <p class="text-blue-400 text-[10px] uppercase font-black tracking-widest leading-none mt-1">PDF Preview</p>
                     </div>
                     
-                    <button 
-                        @click="close"
-                        class="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center hover:bg-red-500 transition-all active:scale-90"
-                    >
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <a 
+                            v-if="url"
+                            :href="url"
+                            target="_blank"
+                            class="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"
+                            :title="__('Open in nieuw tabblad')"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                        <button 
+                            @click="close"
+                            class="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center hover:bg-red-500 transition-all active:scale-90"
+                            :title="__('Sluiten')"
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Viewer Container -->

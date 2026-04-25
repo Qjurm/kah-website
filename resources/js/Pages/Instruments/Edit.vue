@@ -1,7 +1,9 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import PdfPreviewModal from '@/Components/PdfPreviewModal.vue';
+import MusicPartCard from '@/Components/MusicPartCard.vue';
 
 const props = defineProps({
     userInstruments: Array,
@@ -16,6 +18,21 @@ const form = useForm({
     instrument_ids: props.userInstruments,
     primary_instrument_id: props.primaryInstrumentId,
 });
+
+const previewUrl = ref('');
+const previewTitle = ref('');
+const showPreview = ref(false);
+
+function openPreview(part) {
+    previewUrl.value = route('muziek.view', { score: part.score_id, part: part.part_id });
+    previewTitle.value = `${part.score_title} - ${part.instrument}`;
+    showPreview.value = true;
+}
+
+function closePreview() {
+    showPreview.value = false;
+    previewUrl.value = '';
+}
 
 function toggleInstrument(id) {
     const idx = form.instrument_ids.indexOf(id);
@@ -131,32 +148,16 @@ function submit() {
                             </div>
 
                             <div class="space-y-4">
-                                <div v-for="part in myParts" :key="part.part_id" class="p-6 bg-white rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between group">
-                                    <div class="min-w-0 mr-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-blue-50 text-blue-600">{{ part.instrument }}</span>
-                                        </div>
-                                        <div class="font-black text-blue-950 italic leading-tight text-sm truncate">{{ part.score_title }}</div>
-                                        <div class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1 truncate">{{ part.score_composer }}</div>
-                                    </div>
-                                    <div class="flex items-center gap-2 flex-shrink-0">
-                                        <a 
-                                            :href="route('muziek.view', { score: part.score_id, part: part.part_id })" 
-                                            target="_blank"
-                                            class="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                            title="Bekijk PDF"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 1 1 -6 0 3 3 0 0 1 6 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </a>
-                                        <a 
-                                            :href="route('muziek.download', { score: part.score_id, part: part.part_id })"
-                                            class="p-3 bg-blue-950 text-white rounded-xl hover:bg-black transition-all shadow-lg shadow-blue-950/10"
-                                            title="Download PDF"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        </a>
-                                    </div>
-                                </div>
+                                <MusicPartCard
+                                    v-for="part in myParts" 
+                                    :key="part.part_id"
+                                    :part="part"
+                                    layout="horizontal"
+                                    :download-url="route('muziek.download', { score: part.score_id, part: part.part_id })"
+                                    view-btn-class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white"
+                                    download-btn-class="bg-blue-950 text-white hover:bg-black shadow-lg shadow-blue-950/10"
+                                    @preview="openPreview"
+                                />
                             </div>
                         </div>
                     </div>
@@ -164,5 +165,12 @@ function submit() {
                 </div>
             </div>
         </div>
+
+        <PdfPreviewModal 
+            :show="showPreview" 
+            :url="previewUrl" 
+            :title="previewTitle" 
+            @close="closePreview" 
+        />
     </AuthenticatedLayout>
 </template>

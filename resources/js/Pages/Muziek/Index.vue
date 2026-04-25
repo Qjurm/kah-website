@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PdfPreviewModal from '@/Components/PdfPreviewModal.vue';
+import PartActionButtons from '@/Components/PartActionButtons.vue';
 
 const props = defineProps({
     scores: Array,
@@ -148,9 +149,10 @@ function formatDate(date) {
                                 </div>
                                 
                                 <a 
-                                    :href="route('muziek.download-bulk-score', score.id)"
-                                    class="mb-6 block text-center py-2 border border-white/10 rounded-xl text-[8px] font-black uppercase tracking-widest text-white/40 hover:bg-white/5 hover:text-white transition-all"
+                                    :href="route('muziek.download-bulk-score', { score: score.id, instrument_id: selectedInstrumentId })"
+                                    class="mb-6 flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all shadow-sm group"
                                 >
+                                    <svg class="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                                     {{ __('Download alle partijen') }}
                                 </a>
                                 
@@ -162,25 +164,17 @@ function formatDate(date) {
                                             <span class="text-[10px] font-black uppercase tracking-widest text-blue-100 truncate block leading-tight">
                                                 {{ getPartDisplayName(part) }}
                                             </span>
-                                            <span v-if="part.original_filename" class="text-[8px] font-bold text-blue-300/40 truncate block max-w-[120px]">
+                                            <span v-if="part.original_filename" class="text-[9px] font-bold text-blue-200/80 truncate block mt-1">
                                                 {{ part.original_filename }}
                                             </span>
                                         </div>
                                         <div class="flex items-center gap-2 flex-shrink-0">
-                                            <button 
-                                                @click="openPreview(score, part)"
-                                                class="p-3 bg-yellow-400 text-blue-950 rounded-xl hover:bg-yellow-300 transition-all active:scale-90 shadow-lg shadow-yellow-400/10"
-                                                :title="__('Bekijk partij')"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                            </button>
-                                            <a 
-                                                :href="getDownloadUrl(score.id, part.id)"
-                                                class="p-3 bg-white text-blue-950 rounded-xl hover:bg-blue-50 transition-all active:scale-90 shadow-sm"
-                                                :title="__('Download partij')"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                            </a>
+                                            <PartActionButtons 
+                                                :download-url="getDownloadUrl(score.id, part.id)"
+                                                view-class="bg-yellow-400 text-blue-950 hover:bg-yellow-300 shadow-lg shadow-yellow-400/10"
+                                                download-class="bg-white text-blue-950 hover:bg-blue-50 shadow-sm"
+                                                @preview="openPreview(score, part)"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -202,30 +196,26 @@ function formatDate(date) {
                                 
                                 <div v-if="myRelevantParts[score.id]" class="flex items-center gap-6">
                                     <a 
-                                        :href="route('muziek.download-bulk-score', score.id)"
-                                        class="hidden lg:block text-[8px] font-black uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors"
+                                        :href="route('muziek.download-bulk-score', { score: score.id, instrument_id: selectedInstrumentId })"
+                                        class="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5 shadow-sm transition-all text-white/70 hover:text-white group flex-shrink-0"
+                                        :title="__('Download alle partijen als ZIP')"
                                     >
-                                        {{ __('Alles ZIP') }}
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        <span class="text-[8px] font-black uppercase tracking-[0.2em] mt-0.5">{{ __('Alles downloaden') }}</span>
                                     </a>
-                                    <div v-for="part in myRelevantParts[score.id]" :key="'rel-'+part.id" class="flex items-center gap-2">
-                                        <div class="hidden sm:flex flex-col text-right mr-3">
-                                            <div class="text-[9px] font-black uppercase tracking-widest text-blue-200 opacity-50">{{ getPartDisplayName(part) }}</div>
-                                            <div v-if="part.original_filename" class="text-[7px] font-bold text-blue-100/20 truncate max-w-[100px]">{{ part.original_filename }}</div>
+                                    <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+                                        <div v-for="part in myRelevantParts[score.id]" :key="'rel-'+part.id" class="flex items-center justify-between gap-4 px-3 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0">
+                                            <div class="hidden sm:flex flex-col text-right">
+                                                <div class="text-[9px] font-black uppercase tracking-widest text-blue-200 opacity-80">{{ getPartDisplayName(part) }}</div>
+                                                <div v-if="part.original_filename" class="text-[9px] font-bold text-blue-200/80 truncate max-w-[150px] mt-0.5">{{ part.original_filename }}</div>
+                                            </div>
+                                            <PartActionButtons 
+                                                :download-url="getDownloadUrl(score.id, part.id)"
+                                                view-class="!p-2 bg-yellow-400 text-blue-950 hover:bg-yellow-300 shadow-lg shadow-yellow-400/10"
+                                                download-class="!p-2 bg-white text-blue-950 hover:bg-blue-50"
+                                                @preview="openPreview(score, part)"
+                                            />
                                         </div>
-                                        <button 
-                                            @click="openPreview(score, part)"
-                                            class="p-3 bg-yellow-400 text-blue-950 rounded-xl hover:bg-yellow-300 transition-all active:scale-90 shadow-lg shadow-yellow-400/10"
-                                            :title="__('Bekijk')"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </button>
-                                        <a 
-                                            :href="getDownloadUrl(score.id, part.id)"
-                                            class="p-3 bg-white text-blue-950 rounded-xl hover:bg-blue-50 transition-all active:scale-90"
-                                            :title="__('Download')"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        </a>
                                     </div>
                                 </div>
                                 <div v-else class="opacity-30 italic text-[9px] font-black uppercase tracking-widest hidden md:block">
@@ -300,34 +290,40 @@ function formatDate(date) {
                         </button>
 
                         <div v-if="expandedScores.has(score.id)" class="px-10 pb-10 border-t border-gray-50 bg-gray-50/30">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-10 text-left">
+                            <div class="flex items-center justify-between pt-10 pb-2">
+                                <h4 class="text-sm font-black text-blue-950 italic uppercase tracking-widest">{{ __('Partijen') }}</h4>
+                                <a 
+                                    :href="route('muziek.download-bulk-score', { score: score.id, instrument_id: selectedInstrumentId })"
+                                    class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-blue-600 font-black uppercase tracking-widest text-[9px] active:scale-95 shadow-sm group"
+                                    :title="__('Download geselecteerde partijen als ZIP')"
+                                >
+                                    <svg class="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    {{ __('Alles downloaden') }}
+                                </a>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4 text-left">
                                 <div 
                                     v-for="part in getSortedParts(score.parts)"
                                     :key="'part-'+part.id"
                                     class="flex items-center justify-between p-5 rounded-2xl transition-all border"
                                     :class="isUserPart(part) ? 'bg-yellow-400 border-yellow-400 shadow-lg shadow-yellow-400/20' : 'bg-white border-gray-100 hover:border-blue-200 shadow-sm'"
                                 >
-                                    <span class="text-[11px] font-black uppercase tracking-widest truncate mr-2" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-500'">
-                                        {{ getPartDisplayName(part) }} {{ isUserPart(part) ? '★' : '' }}
-                                    </span>
+                                    <div class="flex flex-col min-w-0 mr-2">
+                                        <span class="text-[11px] font-black uppercase tracking-widest truncate" :class="isUserPart(part) ? 'text-blue-950' : 'text-gray-500'">
+                                            {{ getPartDisplayName(part) }} {{ isUserPart(part) ? '★' : '' }}
+                                        </span>
+                                        <span v-if="part.original_filename" class="text-[9px] font-bold truncate mt-0.5" :class="isUserPart(part) ? 'text-blue-900/60' : 'text-gray-400'">
+                                            {{ part.original_filename }}
+                                        </span>
+                                    </div>
                                     
                                     <div class="flex items-center gap-3">
-                                        <button 
-                                            @click="openPreview(score, part)"
-                                            class="p-1 hover:scale-110 transition-transform"
-                                            :class="isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600'"
-                                            title="Bekijk PDF"
-                                        >
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                                        </button>
-                                        <a 
-                                            :href="getDownloadUrl(score.id, part.id)"
-                                            class="p-1 hover:scale-110 transition-transform"
-                                            :class="isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600'"
-                                            title="Download PDF"
-                                        >
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                        </a>
+                                        <PartActionButtons 
+                                            :download-url="getDownloadUrl(score.id, part.id)"
+                                            :view-class="['!p-1 hover:scale-110 transition-transform !shadow-none bg-transparent', isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600']"
+                                            :download-class="['!p-1 hover:scale-110 transition-transform !shadow-none bg-transparent', isUserPart(part) ? 'text-blue-950/60 hover:text-blue-950' : 'text-gray-300 hover:text-blue-600']"
+                                            @preview="openPreview(score, part)"
+                                        />
                                     </div>
                                 </div>
                             </div>

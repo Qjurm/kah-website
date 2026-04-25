@@ -60,9 +60,13 @@ class MusicController extends Controller
         return $downloadAction->execute($score, $part);
     }
 
-    public function downloadBulkScore(Score $score)
+    public function downloadBulkScore(Request $request, Score $score)
     {
-        $score->load('parts.instrument');
+        $query = $score->parts()->with('instrument');
+        if ($request->filled('instrument_id')) {
+            $query->where('instrument_id', $request->instrument_id);
+        }
+        $parts = $query->get();
         
         $zip = new \ZipArchive();
         $fileName = \Illuminate\Support\Str::slug($score->title) . '.zip';
@@ -71,7 +75,7 @@ class MusicController extends Controller
         if ($zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
             $disk = config('filesystems.disks.scores.driver') === 'local' ? 'public' : 'scores';
             
-            foreach ($score->parts as $part) {
+            foreach ($parts as $part) {
                 if (Storage::disk($disk)->exists($part->pdf_path)) {
                     $content = Storage::disk($disk)->get($part->pdf_path);
                     $instrumentName = $part->instrument->name ?? $part->instrument;
